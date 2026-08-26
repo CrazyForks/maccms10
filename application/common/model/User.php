@@ -39,12 +39,21 @@ class User extends Base
     /**
      * 公开 API 用户详情允许返回的字段（白名单）。
      *
+     * 安全（#1363）：公开 / 未认证接口只能返回“非敏感的公开资料”。
+     * 因此本白名单不得包含手机号、邮箱、QQ、积分/经验/余额、邀请码等 PII，
+     * 也不得包含 group_id（会员/权限组）、user_status（账号状态）等账户元数据，
+     * 否则未认证用户即可通过 /api.php/user/get_detail?id= 枚举并窃取会员信息。
+     * 需要完整字段的场景（后台、用户查看自己的资料）请走带鉴权的接口。
+     * 注：user_status 仅作为查询条件（仅取 status=1 的正常账号），不作为输出字段；
+     *     user_portrait 由控制器动态追加，无需列入本白名单。
+     *
      * @return string
      */
     public function publicApiDetailFields()
     {
-        return 'user_id,user_name,user_nick_name,user_phone,user_qq,user_email,group_id,user_points,user_exp,user_integral,user_invite_code,user_invite_count,user_reg_time,user_status';
+        return 'user_id,user_name,user_nick_name,user_reg_time';
     }
+
 
     /**
      * 剥离会话/凭证相关字段，避免公开接口泄露后可伪造 user_check / JWT。

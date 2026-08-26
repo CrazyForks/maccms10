@@ -405,13 +405,15 @@ API 接口说明 V2（基于当前实现）
     - limit：number(1..500)
     - name：string(<=50)
     - nickname：string(<=50)
-    - email：string(<=100)
-    - qq：string(<=20)
-    - phone：string(<=20)
     - time_start：number(1..MAX)
     - time_end：number(1..MAX)
-    - group_id：number
-    - orderby：in[login_time,reg_time,points]
+    - orderby：in[reg_time]
+  - 迁移说明（#1363）：公开列表已移除 email、qq、phone（禁止按 PII 反查）、group_id（禁止推断会员/权限组）
+    与未记载的 id 精确查询（单条查询请用 get_detail）；orderby 仅保留 reg_time（不再提供 login_time、points
+    排序 oracle）。上述已废弃参数传入非空值时返回 1001 参数错误（传空值兼容忽略）。此外 name / nickname 仅接受
+    字符串，传数组（name[]=x）会返回 1001（避免旧实现的 strlen 类型错误）。
+    返回字段固定为 user_id、user_name、user_nick_name、user_reg_time，不含任何 PII 或账户元数据。
+
 - 详情：/api.php/user/get_detail/
   - 参数：id：number 必填(1..MAX)
 - 分销推广下线列表：GET /api.php/user/get_reward_list

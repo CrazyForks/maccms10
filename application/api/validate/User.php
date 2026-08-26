@@ -14,31 +14,29 @@ class User extends Validate
         'page'       => 'number|between:1,' . PHP_INT_MAX,
         'name'       => 'max:50',
         'nickname'   => 'max:50',
-        'email'      => 'max:100',
-        'qq'         => 'max:20',
-        'phone'      => 'max:20',
         'time_start' => 'number|between:1,' . PHP_INT_MAX,
         'time_end'   => 'number|between:1,' . PHP_INT_MAX,
-        'group_id'   => 'number|1,500',
-        'orderby'    => 'in:login_time,reg_time,points',
+        // 安全（#1363）：公开列表仅按 reg_time 排序。login_time / points 会成为
+        // 「近期活跃顺序 / 积分相对排序」的间接 oracle，一律不开放给未认证接口。
+        'orderby'    => 'in:reg_time',
     ];
+
 
     protected $message = [
 
     ];
 
     protected $scene = [
+        // 安全（#1363）：已下线 email/qq/phone 反查与 group_id 会员组过滤；
+        // 这些参数已从 scene 与 $rule 移除，控制器会显式拒绝（返回 1001）。
         'get_list' => [
             'offset',
             'limit',
             'name',
             'nickname',
-            'email',
-            'qq',
-            'phone',
-            'reg_time_start',
-            'reg_time_end',
-            'group_id',
+            'time_start',
+            'time_end',
+            'orderby',
         ],
         'get_detail' => [
             'id',

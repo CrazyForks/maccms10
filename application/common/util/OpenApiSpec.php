@@ -624,20 +624,16 @@ class OpenApiSpec
     private function pathsUser()
     {
         return array(
-            '/user/get_list' => $this->get('User', '用户资料列表', '', array(
+            '/user/get_list' => $this->get('User', '用户资料列表', '公开接口仅返回非敏感的公开资料字段（user_id、user_name、user_nick_name、user_reg_time）；不含手机号/邮箱/QQ 等 PII，且不支持按手机/邮箱/QQ 反查；已移除 group_id 会员组过滤（防推断会员/权限组），公开端仅支持 orderby=reg_time（不再提供 login_time/points 排序 oracle）。上述已废弃参数（含未记载的 id，单条查询请用 get_detail）传入非空值时返回 1001 参数错误（传空值兼容忽略）；name/nickname 仅接受字符串，传数组会返回 1001（#1363）。', array(
                 $this->q('offset', 'integer', false, '偏移'),
                 $this->q('limit', 'integer', false, '1~500'),
                 $this->q('name', 'string', false, '用户名（<=50）'),
                 $this->q('nickname', 'string', false, '昵称（<=50）'),
-                $this->q('email', 'string', false, '邮箱（<=100）'),
-                $this->q('qq', 'string', false, 'QQ（<=20）'),
-                $this->q('phone', 'string', false, '手机（<=20）'),
                 $this->q('time_start', 'integer', false, '起始时间戳'),
                 $this->q('time_end', 'integer', false, '结束时间戳'),
-                $this->q('group_id', 'integer', false, '用户组 ID'),
-                $this->q('orderby', 'string', false, 'login_time|reg_time|points'),
+                $this->q('orderby', 'string', false, 'reg_time'),
             )),
-            '/user/get_detail' => $this->get('User', '用户资料详情', '', array(
+            '/user/get_detail' => $this->get('User', '用户资料详情', '公开接口仅返回非敏感的公开资料字段（user_id、user_name、user_nick_name、user_reg_time、user_portrait）；不含手机号/邮箱/QQ/积分等 PII，也不含 group_id、user_status 等账户元数据（#1363）。', array(
                 $this->q('id', 'integer', true, '用户 ID'),
             )),
             '/user/get_reward_list' => $this->get('User', '分销推广下线列表', '需登录。', array(
