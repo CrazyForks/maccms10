@@ -36,6 +36,16 @@
 	.dplayer-setting-item.dplayer-setting-danunlimit {
 		display: none !important;
 	}
+	/* 移动端：播放/暂停钮移左下，避开底部进度条与控制栏（#170） */
+	.dplayer.dplayer-mobile .dplayer-mobile-play {
+		left: 10px;
+		bottom: 48px;
+		top: auto;
+		width: 40px;
+		height: 40px;
+		transform: none;
+		z-index: 2;
+	}
 	/* 嵌入 MacCMS 父页 iframe：PC 端常驻显示「网页全屏」，无需悬停 */
 	html.mac-embed-player .dplayer:not(.dplayer-mobile) .dplayer-controller .dplayer-icons .dplayer-full .dplayer-full-in-icon {
 		display: inline-block !important;
