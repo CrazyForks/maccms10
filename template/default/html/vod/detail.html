@@ -5,7 +5,7 @@
 	{include file="public/include"}
 	{include file="public/include_rating_svg" /}
 	<link rel="stylesheet" type="text/css" href="{$maccms.path_tpl}/asset/css/vod-type.css?v=202607101" />
-	<link rel="stylesheet" href="{$maccms.path}template/default/asset/css/vod-detail.css?v=202604161" type="text/css" />
+	<link rel="stylesheet" href="{$maccms.path}template/default/asset/css/vod-detail.css?v=202607306" type="text/css" />
 	{include file="module/vod_tagwall_link_css" /}
 </head>
 
@@ -49,6 +49,11 @@
 
 							<div class="content_min content_btn">
 								{include file="widget/detail_button"}
+								{if condition="$GLOBALS['config']['user']['status'] eq 1"}
+								<div class="playbtn o_fav">
+									<div class="btn btn_fav mac_ulog js-vod-fav play_collec" data-type="2" data-mid="{$maccms.mid}" data-id="{$param.id|default='0'}" data-uid="" role="button" tabindex="0"><i class="iconfont">&#xe629;</i>&nbsp; <span class="js-vod-fav-label" data-lang="string_play_sc">收藏</span></div>
+								</div>
+								{/if}
 								<div class="playbtn o_share ">
 									<a class="btn btn_share open-share" href="javascript:;" data-share-mid="1" data-share-rid="{$obj.vod_id}"><i class="iconfont">&#xe615;</i>&nbsp; <span
 											data-lang="string_vod_share">分享</span> </a>
