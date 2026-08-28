@@ -65,76 +65,16 @@
                     </div>
                 </div>
 
-                <div class="layui-form-item">
-                    <label class="layui-form-label">{:lang('name')}：</label>
-                    <div class="layui-input-inline w500">
-                        <input type="text" class="layui-input" value="{$info.website_name}" placeholder="" name="website_name">
-                    </div>
-                    <label class="layui-form-label">{:lang('sub')}：</label>
-                    <div class="layui-input-inline ">
-                        <input type="text" class="layui-input" value="{$info.website_sub}" placeholder="" name="website_sub">
-                    </div>
-
-                </div>
-
-                <div class="layui-form-item">
-                    <label class="layui-form-label">{:lang('en')}：</label>
-                    <div class="layui-input-inline w500">
-                        <input type="text" class="layui-input" value="{$info.website_en}" placeholder="" name="website_en">
-                    </div>
-                    <label class="layui-form-label">{:lang('letter')}：</label>
-                    <div class="layui-input-inline w70">
-                        <input type="text" class="layui-input" value="{$info.website_letter}" placeholder="" name="website_letter">
-                    </div>
-                    <label class="layui-form-label">{:lang('color')}：</label>
-                    <div class="layui-input-inline w70">
-                        <input type="text" class="layui-input color" value="{$info.website_color}" placeholder="" name="website_color">
-                    </div>
-                </div>
-
                     <div class="layui-form-item">
                         <label class="layui-form-label">{:lang('jumpurl')}：</label>
                         <div class="layui-input-inline w500">
                             <input type="text" class="layui-input" value="{$info.website_jumpurl}" placeholder="" name="website_jumpurl">
                         </div>
-                    </div>
-                    <div class="layui-form-item">
-                        <label class="layui-form-label">{:lang('area')}：</label>
-                        <div class="layui-input-inline w500">
-                            <input type="text" class="layui-input" value="{$info.website_area}" placeholder="" name="website_area">
+                        <label class="layui-form-label">{:lang('color')}：</label>
+                        <div class="layui-input-inline w70">
+                            <input type="text" class="layui-input color" value="{$info.website_color}" placeholder="" name="website_color">
                         </div>
                     </div>
-                    <div class="layui-form-item">
-                        <label class="layui-form-label">{:lang('lang')}：</label>
-                        <div class="layui-input-inline w500">
-                            <input type="text" class="layui-input" value="{$info.website_lang}" placeholder="" name="website_lang">
-                        </div>
-                    </div>
-                <div class="layui-form-item">
-                    <label class="layui-form-label">TAG：</label>
-                    <div class="layui-input-inline w500">
-                        <input type="text" class="layui-input" value="{$info.website_tag}" placeholder="" name="website_tag">
-                    </div>
-                    <div class="layui-input-inline w120">
-                        <input type="checkbox" name="uptag" title="{:lang('auto_make')}" value="1" class="layui-checkbox checkbox-ids" lay-skin="primary">
-                    </div>
-                </div>
-                    <div class="layui-form-item">
-                        <label class="layui-form-label">{:lang('class')}：</label>
-                        <div class="layui-input-inline w500">
-                            <input type="text" class="layui-input" value="{$info.website_class}" placeholder="" id="website_class" name="website_class">
-                        </div>
-                        <div class="layui-input-inline w500 website_class_label">
-
-                        </div>
-                    </div>
-                    <div class="layui-form-item">
-                        <label class="layui-form-label">{:lang('remarks')}：</label>
-                        <div class="layui-input-inline w500">
-                            <input type="text" class="layui-input" value="{$info.website_remarks}" placeholder="" name="website_remarks">
-                        </div>
-                    </div>
-
 
                     <div class="layui-form-item">
                         <label class="layui-form-label">LOGO：</label>
@@ -179,6 +119,214 @@
                         </div>
                     </div>
 
+                    <blockquote class="layui-elem-quote layui-quote-nm">
+                        {:lang('admin/website/content_lang_tip')}
+                    </blockquote>
+
+                    {if condition="$content_lang_multi"}
+                    <div class="layui-tab" lay-filter="content_lang_tab">
+                        <ul class="layui-tab-title">
+                            {volist name="content_lang_enabled" id="lc"}
+                            <li {if condition="$lc eq $content_lang_default"}class="layui-this"{/if}>{$lc}</li>
+                            {/volist}
+                        </ul>
+                        <div class="layui-tab-content">
+                            {volist name="content_lang_enabled" id="lc"}
+                            <div class="layui-tab-item {if condition="$lc eq $content_lang_default"}layui-show{/if}">
+                                {if condition="$lc neq $content_lang_default"}
+                                <div class="layui-form-item">
+                                    <label class="layui-form-label">{$lc}</label>
+                                    <div class="layui-input-inline">
+                                        {if condition="!empty($content_lang_data[$lc]['website_name'])"}
+                                        <span class="layui-badge layui-bg-green">{:lang('admin/vod/content_lang_translated')}</span>
+                                        {else/}
+                                        <span class="layui-badge layui-bg-gray">{:lang('admin/vod/content_lang_untranslated')}</span>
+                                        {/if}
+                                    </div>
+                                </div>
+                                {/if}
+                                <div class="layui-form-item">
+                                    <label class="layui-form-label">{:lang('name')}：</label>
+                                    <div class="layui-input-inline w500">
+                                        <input type="text" class="layui-input"
+                                            lay-verify="{if condition="$lc eq $content_lang_default"}website_name{/if}"
+                                            id="{if condition="$lc eq $content_lang_default"}website_name{else/}cl_{$lc}_website_name{/if}"
+                                            name="{if condition="$lc eq $content_lang_default"}website_name{else/}content_lang[{$lc}][website_name]{/if}"
+                                            value="{if condition="$lc eq $content_lang_default"}{$info.website_name}{else/}{$content_lang_data[$lc]['website_name']|default=''}{/if}">
+                                        {if condition="$lc neq $content_lang_default and $content_translate_available"}
+                                        <button type="button" class="layui-btn layui-btn-xs cl-translate-btn" data-lang="{$lc}" data-field="website_name" data-src="[name=&quot;website_name&quot;]">{:lang('admin/vod/content_lang_translate_btn')}</button>
+                                        {/if}
+                                    </div>
+                                    <label class="layui-form-label">{:lang('sub')}：</label>
+                                    <div class="layui-input-inline">
+                                        <input type="text" class="layui-input"
+                                            id="{if condition="$lc eq $content_lang_default"}website_sub{else/}cl_{$lc}_website_sub{/if}"
+                                            name="{if condition="$lc eq $content_lang_default"}website_sub{else/}content_lang[{$lc}][website_sub]{/if}"
+                                            value="{if condition="$lc eq $content_lang_default"}{$info.website_sub}{else/}{$content_lang_data[$lc]['website_sub']|default=''}{/if}">
+                                        {if condition="$lc neq $content_lang_default and $content_translate_available"}
+                                        <button type="button" class="layui-btn layui-btn-xs cl-translate-btn" data-lang="{$lc}" data-field="website_sub" data-src="[name=&quot;website_sub&quot;]">{:lang('admin/vod/content_lang_translate_btn')}</button>
+                                        {/if}
+                                    </div>
+                                </div>
+                                {if condition="$lc eq $content_lang_default"}
+                                <div class="layui-form-item">
+                                    <label class="layui-form-label">{:lang('en')}：</label>
+                                    <div class="layui-input-inline w500">
+                                        <input type="text" class="layui-input" id="website_en" name="website_en" value="{$info.website_en}">
+                                    </div>
+                                    <label class="layui-form-label">{:lang('letter')}：</label>
+                                    <div class="layui-input-inline w70">
+                                        <input type="text" class="layui-input" id="website_letter" name="website_letter" value="{$info.website_letter}">
+                                    </div>
+                                </div>
+                                {/if}
+                                <div class="layui-form-item">
+                                    <label class="layui-form-label">{:lang('area')}：</label>
+                                    <div class="layui-input-inline w500">
+                                        <input type="text" class="layui-input"
+                                            id="{if condition="$lc eq $content_lang_default"}website_area{else/}cl_{$lc}_website_area{/if}"
+                                            name="{if condition="$lc eq $content_lang_default"}website_area{else/}content_lang[{$lc}][website_area]{/if}"
+                                            value="{if condition="$lc eq $content_lang_default"}{$info.website_area}{else/}{$content_lang_data[$lc]['website_area']|default=''}{/if}">
+                                        {if condition="$lc neq $content_lang_default and $content_translate_available"}
+                                        <button type="button" class="layui-btn layui-btn-xs cl-translate-btn" data-lang="{$lc}" data-field="website_area" data-src="[name=&quot;website_area&quot;]">{:lang('admin/vod/content_lang_translate_btn')}</button>
+                                        {/if}
+                                    </div>
+                                    <label class="layui-form-label">{:lang('lang')}：</label>
+                                    <div class="layui-input-inline w500">
+                                        <input type="text" class="layui-input"
+                                            id="{if condition="$lc eq $content_lang_default"}website_lang{else/}cl_{$lc}_website_lang{/if}"
+                                            name="{if condition="$lc eq $content_lang_default"}website_lang{else/}content_lang[{$lc}][website_lang]{/if}"
+                                            value="{if condition="$lc eq $content_lang_default"}{$info.website_lang}{else/}{$content_lang_data[$lc]['website_lang']|default=''}{/if}">
+                                        {if condition="$lc neq $content_lang_default and $content_translate_available"}
+                                        <button type="button" class="layui-btn layui-btn-xs cl-translate-btn" data-lang="{$lc}" data-field="website_lang" data-src="[name=&quot;website_lang&quot;]">{:lang('admin/vod/content_lang_translate_btn')}</button>
+                                        {/if}
+                                    </div>
+                                </div>
+                                <div class="layui-form-item">
+                                    <label class="layui-form-label">TAG：</label>
+                                    <div class="layui-input-block">
+                                        <input type="text" class="layui-input"
+                                            id="{if condition="$lc eq $content_lang_default"}website_tag{else/}cl_{$lc}_website_tag{/if}"
+                                            name="{if condition="$lc eq $content_lang_default"}website_tag{else/}content_lang[{$lc}][website_tag]{/if}"
+                                            value="{if condition="$lc eq $content_lang_default"}{$info.website_tag}{else/}{$content_lang_data[$lc]['website_tag']|default=''}{/if}">
+                                        {if condition="$lc eq $content_lang_default"}
+                                        <div class="layui-input-inline w120" style="margin-left:10px;">
+                                            <input type="checkbox" name="uptag" title="{:lang('auto_make')}" value="1" class="layui-checkbox checkbox-ids" lay-skin="primary">
+                                        </div>
+                                        {/if}
+                                        {if condition="$lc neq $content_lang_default and $content_translate_available"}
+                                        <button type="button" class="layui-btn layui-btn-xs cl-translate-btn" data-lang="{$lc}" data-field="website_tag" data-src="[name=&quot;website_tag&quot;]">{:lang('admin/vod/content_lang_translate_btn')}</button>
+                                        {/if}
+                                    </div>
+                                </div>
+                                <div class="layui-form-item">
+                                    <label class="layui-form-label">{:lang('class')}：</label>
+                                    <div class="layui-input-inline w500">
+                                        <input type="text" class="layui-input"
+                                            id="{if condition="$lc eq $content_lang_default"}website_class{else/}cl_{$lc}_website_class{/if}"
+                                            name="{if condition="$lc eq $content_lang_default"}website_class{else/}content_lang[{$lc}][website_class]{/if}"
+                                            value="{if condition="$lc eq $content_lang_default"}{$info.website_class}{else/}{$content_lang_data[$lc]['website_class']|default=''}{/if}">
+                                        {if condition="$lc neq $content_lang_default and $content_translate_available"}
+                                        <button type="button" class="layui-btn layui-btn-xs cl-translate-btn" data-lang="{$lc}" data-field="website_class" data-src="[name=&quot;website_class&quot;]">{:lang('admin/vod/content_lang_translate_btn')}</button>
+                                        {/if}
+                                    </div>
+                                    {if condition="$lc eq $content_lang_default"}
+                                    <div class="layui-input-inline w500 website_class_label">
+                                    </div>
+                                    {/if}
+                                </div>
+                                <div class="layui-form-item">
+                                    <label class="layui-form-label">{:lang('remarks')}：</label>
+                                    <div class="layui-input-block">
+                                        <input type="text" class="layui-input"
+                                            id="{if condition="$lc eq $content_lang_default"}website_remarks{else/}cl_{$lc}_website_remarks{/if}"
+                                            name="{if condition="$lc eq $content_lang_default"}website_remarks{else/}content_lang[{$lc}][website_remarks]{/if}"
+                                            value="{if condition="$lc eq $content_lang_default"}{$info.website_remarks}{else/}{$content_lang_data[$lc]['website_remarks']|default=''}{/if}">
+                                        {if condition="$lc neq $content_lang_default and $content_translate_available"}
+                                        <button type="button" class="layui-btn layui-btn-xs cl-translate-btn" data-lang="{$lc}" data-field="website_remarks" data-src="[name=&quot;website_remarks&quot;]">{:lang('admin/vod/content_lang_translate_btn')}</button>
+                                        {/if}
+                                    </div>
+                                </div>
+                                <div class="layui-form-item">
+                                    <label class="layui-form-label">{:lang('blurb')}：</label>
+                                    <div class="layui-input-block">
+                                        <textarea class="layui-textarea" style="height:40px;" placeholder="{:lang('blurb_auto_tip')}"
+                                            id="{if condition="$lc eq $content_lang_default"}website_blurb{else/}cl_{$lc}_website_blurb{/if}"
+                                            name="{if condition="$lc eq $content_lang_default"}website_blurb{else/}content_lang[{$lc}][website_blurb]{/if}">{if condition="$lc eq $content_lang_default"}{$info.website_blurb}{else/}{$content_lang_data[$lc]['website_blurb']|default=''}{/if}</textarea>
+                                        {if condition="$lc neq $content_lang_default and $content_translate_available"}
+                                        <button type="button" class="layui-btn layui-btn-xs cl-translate-btn" data-lang="{$lc}" data-field="website_blurb" data-src="[name=&quot;website_blurb&quot;]">{:lang('admin/vod/content_lang_translate_btn')}</button>
+                                        {/if}
+                                    </div>
+                                </div>
+                                <div class="layui-form-item">
+                                    <label class="layui-form-label">{:lang('content')}：</label>
+                                    <div class="layui-input-block">
+                                        <textarea style="width:100%;height:{if condition="$lc eq $content_lang_default"}300{else/}200{/if}px" type="{if condition="$lc eq $content_lang_default"}text/plain{/if}"
+                                            id="{if condition="$lc eq $content_lang_default"}website_content{else/}cl_{$lc}_website_content{/if}"
+                                            name="{if condition="$lc eq $content_lang_default"}website_content{else/}content_lang[{$lc}][website_content]{/if}">{if condition="$lc eq $content_lang_default"}{$info.website_content|mac_url_content_img}{else/}{$content_lang_data[$lc]['website_content']|default=''}{/if}</textarea>
+                                        {if condition="$lc neq $content_lang_default and $content_translate_available"}
+                                        <button type="button" class="layui-btn layui-btn-xs cl-translate-btn" data-lang="{$lc}" data-field="website_content" data-src="#website_content">{:lang('admin/vod/content_lang_translate_btn')}</button>
+                                        {/if}
+                                    </div>
+                                </div>
+                            </div>
+                            {/volist}
+                        </div>
+                    </div>
+                    {else /}
+                    <div class="layui-form-item">
+                        <label class="layui-form-label">{:lang('name')}：</label>
+                        <div class="layui-input-inline w500">
+                            <input type="text" class="layui-input" lay-verify="website_name" value="{$info.website_name}" placeholder="" name="website_name">
+                        </div>
+                        <label class="layui-form-label">{:lang('sub')}：</label>
+                        <div class="layui-input-inline ">
+                            <input type="text" class="layui-input" value="{$info.website_sub}" placeholder="" name="website_sub">
+                        </div>
+                    </div>
+                    <div class="layui-form-item">
+                        <label class="layui-form-label">{:lang('en')}：</label>
+                        <div class="layui-input-inline w500">
+                            <input type="text" class="layui-input" value="{$info.website_en}" placeholder="" name="website_en">
+                        </div>
+                        <label class="layui-form-label">{:lang('letter')}：</label>
+                        <div class="layui-input-inline w70">
+                            <input type="text" class="layui-input" value="{$info.website_letter}" placeholder="" name="website_letter">
+                        </div>
+                    </div>
+                    <div class="layui-form-item">
+                        <label class="layui-form-label">{:lang('area')}：</label>
+                        <div class="layui-input-inline w500">
+                            <input type="text" class="layui-input" value="{$info.website_area}" placeholder="" name="website_area">
+                        </div>
+                        <label class="layui-form-label">{:lang('lang')}：</label>
+                        <div class="layui-input-inline w500">
+                            <input type="text" class="layui-input" value="{$info.website_lang}" placeholder="" name="website_lang">
+                        </div>
+                    </div>
+                    <div class="layui-form-item">
+                        <label class="layui-form-label">TAG：</label>
+                        <div class="layui-input-inline w500">
+                            <input type="text" class="layui-input" value="{$info.website_tag}" placeholder="" name="website_tag">
+                        </div>
+                        <div class="layui-input-inline w120">
+                            <input type="checkbox" name="uptag" title="{:lang('auto_make')}" value="1" class="layui-checkbox checkbox-ids" lay-skin="primary">
+                        </div>
+                    </div>
+                    <div class="layui-form-item">
+                        <label class="layui-form-label">{:lang('class')}：</label>
+                        <div class="layui-input-inline w500">
+                            <input type="text" class="layui-input" value="{$info.website_class}" placeholder="" id="website_class" name="website_class">
+                        </div>
+                        <div class="layui-input-inline w500 website_class_label">
+                        </div>
+                    </div>
+                    <div class="layui-form-item">
+                        <label class="layui-form-label">{:lang('remarks')}：</label>
+                        <div class="layui-input-inline w500">
+                            <input type="text" class="layui-input" value="{$info.website_remarks}" placeholder="" name="website_remarks">
+                        </div>
+                    </div>
                     <div class="layui-form-item">
                         <label class="layui-form-label">{:lang('blurb')}：</label>
                         <div class="layui-input-block">
@@ -191,6 +339,7 @@
                             <textarea id="website_content" name="website_content" type="text/plain" style="width:100%;height:300px">{$info.website_content|mac_url_content_img}</textarea>
                         </div>
                     </div>
+                    {/if}
                 </div>
 
 
@@ -436,6 +585,53 @@
             $.get("{:url('annex/del')}", {ids:src}, function(res){});
         });
         var ue = editor_getEditor('website_content');
+
+        // 内容级多语言：其它语言 tab 的“详情”字段也用富文本编辑器，和默认语言保持一致的输入体验
+        var clContentEditors = {};
+        {volist name="content_lang_enabled" id="lc"}
+        {if condition="$lc neq $content_lang_default"}
+        clContentEditors['{$lc}'] = editor_getEditor('cl_{$lc}_website_content');
+        {/if}
+        {/volist}
+
+        // 内容级多语言：单字段自动翻译（保存随主表单一起提交，不单独 ajax 保存）
+        $('.cl-translate-btn').on('click', function () {
+            var $btn = $(this);
+            var lang = $btn.data('lang');
+            var field = $btn.data('field');
+            var srcSel = $btn.data('src');
+            var srcText;
+            if (field === 'website_content' && typeof ue !== 'undefined') {
+                srcText = editor_getContent(ue);
+            } else {
+                srcText = $(srcSel).val();
+            }
+            if (!srcText) {
+                layer.msg("{:lang('name_empty')}");
+                return;
+            }
+            $btn.prop('disabled', true);
+            $.post("{:url('website/contentLangTranslate')}", {
+                text: srcText,
+                from: "{$content_lang_default|default='zh-cn'}",
+                to: lang,
+                __token__: "{:mac_admin_csrf_token()}"
+            }, function (r) {
+                $btn.prop('disabled', false);
+                if (r && r.code == 1) {
+                    if (field === 'website_content' && clContentEditors[lang]) {
+                        editor_setContent(clContentEditors[lang], r.data);
+                    } else {
+                        $('#cl_' + lang + '_' + field).val(r.data);
+                    }
+                } else {
+                    layer.msg((r && r.msg) ? r.msg : "{:lang('admin/vod/content_lang_translate_err')}");
+                }
+            }, 'json').fail(function () {
+                $btn.prop('disabled', false);
+                layer.msg("{:lang('admin/vod/content_lang_translate_err')}");
+            });
+        });
     });
 
     function getExtend(id){

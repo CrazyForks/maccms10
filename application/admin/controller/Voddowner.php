@@ -37,6 +37,11 @@ class VodDowner extends Base
                 $this->error(lang('param_err'));
                 return;
             }
+            //默认语言以条目自身字段为准，content_lang 只保存非默认语言的译文（见 mac_config_lang_overlay 注释）
+            if (!isset($param['content_lang']) || !is_array($param['content_lang'])) {
+                $param['content_lang'] = [];
+            }
+            unset($param['content_lang'][mac_content_lang_default()]);
             $list[$param['from']] = $param;
             $sort=[];
             foreach ($list as $k=>&$v){
@@ -51,10 +56,42 @@ class VodDowner extends Base
             return $this->success(lang('save_ok'));
         }
 
-        $info = $list[$param['id']];
+        $info = $list[$param['id']] ?? [];
+
+        //线路配置不落库，译文就近存在条目自身的 content_lang[lang_code] 里（见 mac_config_lang_overlay）
+        $content_lang_default = mac_content_lang_default();
+        $content_lang_enabled = array_values(array_unique(array_merge([$content_lang_default], mac_content_lang_allow_list())));
+        $content_lang_data = (!empty($info['content_lang']) && is_array($info['content_lang'])) ? $info['content_lang'] : [];
         $this->assign('info',$info);
+        $this->assign('content_lang_default', $content_lang_default);
+        $this->assign('content_lang_enabled', $content_lang_enabled);
+        $this->assign('content_lang_multi', count($content_lang_enabled) > 1);
+        $this->assign('content_lang_data', $content_lang_data);
+        $this->assign('content_translate_available', mac_content_translate_available());
+
         $this->assign('title',lang('admin/voddowner/title'));
         return $this->fetch('admin@voddowner/info');
+    }
+
+    /**
+     * 调用已安装的翻译插件（若有）翻译单个字段；没有插件注册时返回空字符串，前端据此禁用按钮。
+     */
+    public function contentLangTranslate()
+    {
+        $text = (string)input('post.text', '');
+        $from = (string)input('post.from', mac_content_lang_default());
+        $to = (string)input('post.to', '');
+        if ($text === '' || $to === '') {
+            return $this->error(lang('param_err'));
+        }
+        if (!mac_content_translate_rate_limit($this->_admin['admin_id'])) {
+            return $this->error(lang('frequently'));
+        }
+        $result = mac_content_translate($text, $from, $to, ['content_type' => 'voddowner']);
+        if ($result === '') {
+            return $this->error(lang('admin/vod/content_lang_translate_err'));
+        }
+        return json(['code' => 1, 'msg' => 'ok', 'data' => $result]);
     }
 
     public function del()

@@ -3755,6 +3755,248 @@ function mac_label_topic_detail($param)
     $res = model('Topic')->infoData($where,'*',1);
     return $res;
 }
+
+// -----------------------------------------------------------------------------
+// 内容级多语言（vod/art）。
+// 站点默认语言的内容照旧存在 mac_vod/mac_art；其它语言的可翻译字段整体存
+// mac_content_lang（按 content_type+content_id+lang_code 一行 JSON），缺失时
+// 由 mac_content_lang_overlay() 回退到默认语言原文，永不返回空字段。
+// -----------------------------------------------------------------------------
+
+/**
+ * 每种内容类型允许翻译覆盖的字段。
+ * 只收纯展示文案：*_en（URL 重写 slug，前台路由按库里原值匹配，翻译后链接会 404）、
+ * *_letter（A-Z 首字母，用于字母筛选/排序的键）等标识/索引字段一律不在此列——
+ * 与 Type::langOverlayTypeList() 的排除口径一致。
+ */
+function mac_content_lang_fields($contentType)
+{
+    $map = [
+        'vod'   => ['vod_name', 'vod_sub', 'vod_tag', 'vod_remarks', 'vod_class', 'vod_area', 'vod_lang', 'vod_version', 'vod_state', 'vod_blurb', 'vod_content'],
+        'art'   => ['art_name', 'art_sub', 'art_tag', 'art_remarks', 'art_class', 'art_blurb', 'art_title', 'art_note', 'art_content'],
+        'manga' => ['manga_name', 'manga_sub', 'manga_tag', 'manga_remarks', 'manga_class', 'manga_blurb', 'manga_content'],
+        'actor' => ['actor_name', 'actor_alias', 'actor_area', 'actor_birtharea', 'actor_starsign', 'actor_school', 'actor_remarks', 'actor_works', 'actor_tag', 'actor_class', 'actor_blurb', 'actor_content'],
+        'website' => ['website_name', 'website_sub', 'website_area', 'website_lang', 'website_tag', 'website_class', 'website_remarks', 'website_blurb', 'website_content'],
+        'live'  => ['live_name', 'live_sub', 'live_blurb', 'live_content'],
+        'type'  => ['type_name', 'type_title', 'type_key', 'type_des', 'type_extend'],
+        'topic' => ['topic_name', 'topic_sub', 'topic_remarks', 'topic_type', 'topic_tag', 'topic_blurb', 'topic_content', 'topic_title', 'topic_key', 'topic_des'],
+        'link'  => ['link_name'],
+        'task'  => ['task_name', 'task_desc'],
+    ];
+    return isset($map[$contentType]) ? $map[$contentType] : [];
+}
+
+/**
+ * 各内容类型翻译字段里需要走 mac_filter_xss() 的子集。
+ * 必须与对应模型 saveData() 里的 $filter_fields 列表保持一致：默认语言字段在模型层已过滤，
+ * 其它语言字段经 content_lang 侧信道写入时同样要过滤，否则等于给了绕过通道（见 #PR28 review）。
+ * 富文本正文（*_content，topic_content 除外，master 上 topic 确实过滤）、结构化字段（*_extend）
+ * 不在此列，保持与模型一致。vod/link/live/task 模型 master 上本就没有 xss 过滤，返回空数组。
+ */
+function mac_content_lang_xss_fields($contentType)
+{
+    $map = [
+        'art'   => ['art_name', 'art_sub', 'art_tag', 'art_class', 'art_blurb', 'art_remarks'],
+        'manga' => ['manga_name', 'manga_sub', 'manga_tag', 'manga_class', 'manga_blurb', 'manga_remarks'],
+        'actor' => ['actor_name', 'actor_alias', 'actor_area', 'actor_birtharea', 'actor_starsign', 'actor_school', 'actor_remarks', 'actor_works', 'actor_tag', 'actor_class', 'actor_blurb'],
+        'website' => ['website_name', 'website_sub', 'website_area', 'website_lang', 'website_tag', 'website_class', 'website_remarks', 'website_blurb'],
+        'type'  => ['type_name', 'type_title', 'type_key', 'type_des'],
+        'topic' => ['topic_name', 'topic_sub', 'topic_type', 'topic_title', 'topic_key', 'topic_des', 'topic_blurb', 'topic_remarks', 'topic_tag', 'topic_content'],
+    ];
+    return isset($map[$contentType]) ? $map[$contentType] : [];
+}
+
+/** 站点默认内容语言（与后台界面语言 app.lang 是两个不同的键，不要混用） */
+function mac_content_lang_default()
+{
+    $known = ['zh-cn', 'zh-tw', 'en-us', 'ja-jp', 'ko-kr', 'de-de', 'fr-fr', 'es-es', 'pt-pt'];
+    $val = $GLOBALS['config']['app']['content_lang_default'] ?? '';
+    return in_array($val, $known, true) ? $val : 'zh-cn';
+}
+
+/** 前台已启用的内容语言列表（后台勾选，pipe 分隔存于 app.content_lang_list，与 search_vod_rule 等同一惯例） */
+function mac_content_lang_allow_list()
+{
+    $raw = $GLOBALS['config']['app']['content_lang_list'] ?? '';
+    if (empty($raw)) {
+        return [];
+    }
+    return array_filter(array_map('trim', explode('|', $raw)));
+}
+
+/**
+ * 解析当前请求应展示的内容语言：GET lang -> cookie -> Accept-Language -> 默认语言。
+ * 仅在允许列表内的取值才会被采纳；GET 命中时顺带写回 cookie 以便后续请求保持。
+ */
+function mac_get_content_lang()
+{
+    $default = mac_content_lang_default();
+    $allow   = mac_content_lang_allow_list();
+    if (empty($allow)) {
+        return $default;
+    }
+
+    $cookieName = 'mac_content_lang';
+    $candidate  = '';
+    $fromGet    = false;
+
+    $get = input('get.lang', '');
+    if (!empty($get)) {
+        $candidate = strtolower($get);
+        $fromGet   = true;
+    } elseif (!empty($_COOKIE[$cookieName])) {
+        $candidate = strtolower($_COOKIE[$cookieName]);
+    } elseif (!empty($_SERVER['HTTP_ACCEPT_LANGUAGE'])) {
+        preg_match('/^([a-z\d\-]+)/i', $_SERVER['HTTP_ACCEPT_LANGUAGE'], $matches);
+        $candidate = isset($matches[1]) ? strtolower($matches[1]) : '';
+    }
+
+    if (empty($candidate) || !in_array($candidate, $allow, true)) {
+        $candidate = $default;
+    }
+
+    if ($fromGet && $candidate !== ($_COOKIE[$cookieName] ?? '')) {
+        try {
+            setcookie($cookieName, $candidate, time() + 86400 * 30, '/');
+        } catch (\Exception $e) {
+            // cookie 写入失败（如已输出内容）不影响本次请求的语言解析
+        }
+    }
+
+    return $candidate;
+}
+
+/**
+ * 用指定语言覆盖内容行里的可翻译字段；找不到译文或字段为空时保留原文，绝不返回空值。
+ * $row 需含 {$contentType}_id 主键字段。
+ *
+ * 默认内容语言＝原始行（mac_vod/mac_art/...）为准，不走 content_lang：采集、批量、快速编辑、
+ * provide API 等写入路径只更新原始行，若默认语言也从 content_lang 取，这些路径改过之后前台会
+ * 一直显示后台表单最后一次保存的旧值。只有非默认语言才做译文覆盖。
+ */
+function mac_content_lang_overlay($contentType, array $row, $lang = null)
+{
+    // 未启用任何前台内容语言时直接返回：省掉每个详情页一次 mac_content_lang 查询，
+    // 也让“部署了新版代码但还没跑在线升级建表”的存量站点不会因查询缺表而白屏。
+    if (empty(mac_content_lang_allow_list())) {
+        return $row;
+    }
+    $lang = $lang ?: \app\common\model\ContentLang::getCurrent();
+    // 默认语言直接用原始行，不查 content_lang（见上方注释）。
+    if ($lang === mac_content_lang_default()) {
+        return $row;
+    }
+    $fields = mac_content_lang_fields($contentType);
+    if (empty($fields)) {
+        return $row;
+    }
+    $contentId = $row[$contentType . '_id'] ?? 0;
+    if (empty($contentId)) {
+        return $row;
+    }
+    $translated = model('ContentLang')->getFields($contentType, $contentId, $lang);
+    if (empty($translated)) {
+        return $row;
+    }
+    foreach ($fields as $field) {
+        if (!empty($translated[$field])) {
+            $row[$field] = $translated[$field];
+        }
+    }
+    return $row;
+}
+
+/** 是否有已安装的插件注册了 content_translate 钩子（决定后台“自动翻译”按钮是否显示） */
+function mac_content_translate_available()
+{
+    return count(\think\Hook::get('content_translate')) > 0;
+}
+
+/**
+ * 调用已注册的翻译插件把一段文本从 $from 翻成 $to；没有插件注册或插件出错时返回空字符串。
+ * 约定：插件的钩子方法返回翻译结果字符串表示成功处理；返回 null 表示“不处理，交给下一个”；
+ * 返回 false 会中断继续尝试下一个已注册插件（Hook::listen 的既有语义）。
+ */
+function mac_content_translate($text, $from, $to, $context = [])
+{
+    if (!mac_content_translate_available()) {
+        return '';
+    }
+    $params = [
+        'text'    => $text,
+        'from'    => $from,
+        'to'      => $to,
+        'context' => $context,
+    ];
+    try {
+        $result = \think\Hook::listen('content_translate', $params, null, true);
+    } catch (\Exception $e) {
+        return '';
+    }
+    return is_string($result) ? $result : '';
+}
+
+/**
+ * 后台“自动翻译”动作的每管理员限流：翻译插件通常调第三方付费 API，被盗账号或误操作
+ * 会刷爆配额。与 VodAiCover::consumeGenerateRateLimit() 同样的按分钟/小时双桶计数。
+ * @return bool true=允许本次调用，false=已超频
+ */
+// 默认 40 次/分钟、600 次/小时：一条 vod 约 14 个可译字段，逐字段翻译整条 + 顺带几条
+// 文章不至于撞线；被盗号刷配额会被小时桶挡住
+function mac_content_translate_rate_limit($adminId, $perMinute = 40, $perHour = 600)
+{
+    // 没装翻译插件时没有要保护的第三方配额，直接放行（后续 mac_content_translate() 会 fast-fail），
+    // 免得未配置的站点把失败请求也计进配额、20 次后误锁管理员
+    if (!mac_content_translate_available()) {
+        return true;
+    }
+    $adminId = (int)$adminId;
+    if ($adminId <= 0) {
+        return false;
+    }
+    $minKey  = 'admin_content_translate_rl_min:'  . $adminId . ':' . (int)floor(time() / 60);
+    $hourKey = 'admin_content_translate_rl_hour:' . $adminId . ':' . (int)floor(time() / 3600);
+    $nMin  = (int)\think\Cache::get($minKey, 0);
+    if ($nMin >= $perMinute) {
+        return false;
+    }
+    $nHour = (int)\think\Cache::get($hourKey, 0);
+    if ($nHour >= $perHour) {
+        return false;
+    }
+    \think\Cache::set($minKey, $nMin + 1, 70);
+    \think\Cache::set($hourKey, $nHour + 1, 3700);
+    return true;
+}
+
+/**
+ * 播放/下载/服务器线路配置（vodplayer|voddowner|vodserver）不落库，是 mac_arr2file() 直接写到
+ * application/extra 下的 PHP 数组文件，用字符串 key（如 from）取行，没有 mac_content_lang 需要
+ * 的整型 content_id，所以不走 ContentLang 模型；译文就近存在同一条目的 content_lang[lang_code] 里，
+ * 找不到译文或字段为空时保留原文，绝不返回空值。
+ *
+ * 注意：不要在 mac_play_list() 里直接套用——它的产物会被 Vod::infoData() 写进不区分语言的
+ * vod_detail 核心缓存，先建缓存的语言会把线路译文串给其它语言。调用点应在核心缓存读取「之后」，
+ * 与 mac_content_lang_overlay('vod', ...) 同一位置。
+ */
+function mac_config_lang_overlay(array $item, array $fields, $lang = null)
+{
+    $lang = $lang ?: \app\common\model\ContentLang::getCurrent();
+    // 同 mac_content_lang_overlay()：默认语言以条目本身的字段为准，不做译文覆盖。
+    if ($lang === mac_content_lang_default()) {
+        return $item;
+    }
+    if (empty($item['content_lang'][$lang]) || !is_array($item['content_lang'][$lang])) {
+        return $item;
+    }
+    foreach ($fields as $field) {
+        if (!empty($item['content_lang'][$lang][$field])) {
+            $item[$field] = $item['content_lang'][$lang][$field];
+        }
+    }
+    return $item;
+}
+
 function mac_label_art_detail($param)
 {
     $where = [];

@@ -66,48 +66,11 @@
                 </div>
 
                 <div class="layui-form-item">
-                    <label class="layui-form-label">{:lang('name')}：</label>
-                    <div class="layui-input-inline w500">
-                        <input type="text" class="layui-input" value="{$info.art_name}" placeholder="" name="art_name">
-                    </div>
-                    <label class="layui-form-label">{:lang('sub')}：</label>
-                    <div class="layui-input-inline ">
-                        <input type="text" class="layui-input" value="{$info.art_sub}" placeholder="" name="art_sub">
-                    </div>
-
-                </div>
-
-                <div class="layui-form-item">
-                    <label class="layui-form-label">{:lang('en')}：</label>
-                    <div class="layui-input-inline w500">
-                        <input type="text" class="layui-input" value="{$info.art_en}" placeholder="" name="art_en">
-                    </div>
-                    <label class="layui-form-label">{:lang('letter')}：</label>
-                    <div class="layui-input-inline w70">
-                        <input type="text" class="layui-input" value="{$info.art_letter}" placeholder="" name="art_letter">
-                    </div>
                     <label class="layui-form-label">{:lang('color')}：</label>
                     <div class="layui-input-inline w70">
                         <input type="text" class="layui-input color" value="{$info.art_color}" placeholder="" name="art_color">
                     </div>
                 </div>
-
-                <div class="layui-form-item">
-                    <label class="layui-form-label">TAG：</label>
-                    <div class="layui-input-inline w500">
-                        <input type="text" class="layui-input" value="{$info.art_tag}" placeholder="" name="art_tag">
-                    </div>
-                    <div class="layui-input-inline w120">
-                        <input type="checkbox" name="uptag" title="{:lang('auto_make')}" value="1" class="layui-checkbox checkbox-ids" lay-skin="primary">
-                    </div>
-                </div>
-                    <div class="layui-form-item">
-                        <label class="layui-form-label">{:lang('remarks')}：</label>
-                        <div class="layui-input-inline w500">
-                            <input type="text" class="layui-input" value="{$info.art_remarks}" placeholder="" name="art_remarks">
-                        </div>
-                    </div>
-
 
                     <div class="layui-form-item">
                         <label class="layui-form-label">{:lang('rel_vod')}：</label>
@@ -125,16 +88,6 @@
                         </div>
                         <div class="layui-input-inline ">
                             <a class="layui-btn j-iframe" data-href="{:url('art/data')}?select=1&input=art_rel_art" href="javascript:;" title="{:lang('search_data')}">{:lang('search_data')}</a>
-                        </div>
-                    </div>
-
-                    <div class="layui-form-item">
-                        <label class="layui-form-label">{:lang('class')}：</label>
-                        <div class="layui-input-inline w500">
-                            <input type="text" class="layui-input" value="{$info.art_class}" placeholder="" id="art_class" name="art_class">
-                        </div>
-                        <div class="layui-input-inline w500 art_class_label">
-
                         </div>
                     </div>
 
@@ -188,40 +141,243 @@
                             </div>
                         </div>
                     </div>
+                <blockquote class="layui-elem-quote layui-quote-nm">
+                    {:lang('admin/art/content_lang_tip')}
+                </blockquote>
+
+                <script>
+                    var ueArrayMap = {};
+                    var contentArrLenMap = {};
+                    {volist name="content_lang_enabled" id="lc"}
+                    ueArrayMap['{$lc}'] = [];
+                    contentArrLenMap['{$lc}'] = {if condition="$lc eq $content_lang_default"}{$art_page_list|count}{else /}{$content_lang_page_list[$lc]|count|default="0"}{/if};
+                    {/volist}
+                </script>
+
+                {if condition="$content_lang_multi"}
+                <div class="layui-tab" lay-filter="content_lang_tab">
+                    <ul class="layui-tab-title">
+                        {volist name="content_lang_enabled" id="lc"}
+                        <li {if condition="$lc eq $content_lang_default"}class="layui-this"{/if}>{$lc}</li>
+                        {/volist}
+                    </ul>
+                    <div class="layui-tab-content">
+                        {volist name="content_lang_enabled" id="lc"}
+                        <div class="layui-tab-item {if condition="$lc eq $content_lang_default"}layui-show{/if}">
+                            {if condition="$lc neq $content_lang_default"}
+                            <div class="layui-form-item">
+                                <label class="layui-form-label">{$lc}</label>
+                                <div class="layui-input-inline">
+                                    {if condition="!empty($content_lang_data[$lc]['art_name'])"}
+                                    <span class="layui-badge layui-bg-green">{:lang('admin/vod/content_lang_translated')}</span>
+                                    {else/}
+                                    <span class="layui-badge layui-bg-gray">{:lang('admin/vod/content_lang_untranslated')}</span>
+                                    {/if}
+                                </div>
+                            </div>
+                            {/if}
+                            <div class="layui-form-item">
+                                <label class="layui-form-label">{:lang('name')}：</label>
+                                <div class="layui-input-inline w500">
+                                    <input type="text" class="layui-input"
+                                        lay-verify="{if condition="$lc eq $content_lang_default"}art_name{/if}"
+                                        id="{if condition="$lc eq $content_lang_default"}art_name{else/}cl_{$lc}_art_name{/if}"
+                                        name="{if condition="$lc eq $content_lang_default"}art_name{else/}content_lang[{$lc}][art_name]{/if}"
+                                        value="{if condition="$lc eq $content_lang_default"}{$info.art_name}{else/}{$content_lang_data[$lc]['art_name']|default=''}{/if}">
+                                    {if condition="$lc neq $content_lang_default and $content_translate_available"}
+                                    <button type="button" class="layui-btn layui-btn-xs cl-translate-btn" data-lang="{$lc}" data-field="art_name" data-src="[name=&quot;art_name&quot;]">{:lang('admin/vod/content_lang_translate_btn')}</button>
+                                    {/if}
+                                </div>
+                                <label class="layui-form-label">{:lang('sub')}：</label>
+                                <div class="layui-input-inline">
+                                    <input type="text" class="layui-input"
+                                        id="{if condition="$lc eq $content_lang_default"}art_sub{else/}cl_{$lc}_art_sub{/if}"
+                                        name="{if condition="$lc eq $content_lang_default"}art_sub{else/}content_lang[{$lc}][art_sub]{/if}"
+                                        value="{if condition="$lc eq $content_lang_default"}{$info.art_sub}{else/}{$content_lang_data[$lc]['art_sub']|default=''}{/if}">
+                                    {if condition="$lc neq $content_lang_default and $content_translate_available"}
+                                    <button type="button" class="layui-btn layui-btn-xs cl-translate-btn" data-lang="{$lc}" data-field="art_sub" data-src="[name=&quot;art_sub&quot;]">{:lang('admin/vod/content_lang_translate_btn')}</button>
+                                    {/if}
+                                </div>
+                            </div>
+                            {if condition="$lc eq $content_lang_default"}
+                            <div class="layui-form-item">
+                                <label class="layui-form-label">{:lang('en')}：</label>
+                                <div class="layui-input-inline w500">
+                                    <input type="text" class="layui-input" id="art_en" name="art_en" value="{$info.art_en}">
+                                </div>
+                                <label class="layui-form-label">{:lang('letter')}：</label>
+                                <div class="layui-input-inline w70">
+                                    <input type="text" class="layui-input" id="art_letter" name="art_letter" value="{$info.art_letter}">
+                                </div>
+                            </div>
+                            {/if}
+                            <div class="layui-form-item">
+                                <label class="layui-form-label">TAG：</label>
+                                <div class="layui-input-block">
+                                    <input type="text" class="layui-input"
+                                        id="{if condition="$lc eq $content_lang_default"}art_tag{else/}cl_{$lc}_art_tag{/if}"
+                                        name="{if condition="$lc eq $content_lang_default"}art_tag{else/}content_lang[{$lc}][art_tag]{/if}"
+                                        value="{if condition="$lc eq $content_lang_default"}{$info.art_tag}{else/}{$content_lang_data[$lc]['art_tag']|default=''}{/if}">
+                                    {if condition="$lc eq $content_lang_default"}
+                                    <div class="layui-input-inline w120" style="margin-left:10px;">
+                                        <input type="checkbox" name="uptag" title="{:lang('auto_make')}" value="1" class="layui-checkbox checkbox-ids" lay-skin="primary">
+                                    </div>
+                                    {/if}
+                                    {if condition="$lc neq $content_lang_default and $content_translate_available"}
+                                    <button type="button" class="layui-btn layui-btn-xs cl-translate-btn" data-lang="{$lc}" data-field="art_tag" data-src="[name=&quot;art_tag&quot;]">{:lang('admin/vod/content_lang_translate_btn')}</button>
+                                    {/if}
+                                </div>
+                            </div>
+                            <div class="layui-form-item">
+                                <label class="layui-form-label">{:lang('remarks')}：</label>
+                                <div class="layui-input-block">
+                                    <input type="text" class="layui-input"
+                                        id="{if condition="$lc eq $content_lang_default"}art_remarks{else/}cl_{$lc}_art_remarks{/if}"
+                                        name="{if condition="$lc eq $content_lang_default"}art_remarks{else/}content_lang[{$lc}][art_remarks]{/if}"
+                                        value="{if condition="$lc eq $content_lang_default"}{$info.art_remarks}{else/}{$content_lang_data[$lc]['art_remarks']|default=''}{/if}">
+                                    {if condition="$lc neq $content_lang_default and $content_translate_available"}
+                                    <button type="button" class="layui-btn layui-btn-xs cl-translate-btn" data-lang="{$lc}" data-field="art_remarks" data-src="[name=&quot;art_remarks&quot;]">{:lang('admin/vod/content_lang_translate_btn')}</button>
+                                    {/if}
+                                </div>
+                            </div>
+                            <div class="layui-form-item">
+                                <label class="layui-form-label">{:lang('class')}：</label>
+                                <div class="layui-input-inline w500">
+                                    <input type="text" class="layui-input"
+                                        id="{if condition="$lc eq $content_lang_default"}art_class{else/}cl_{$lc}_art_class{/if}"
+                                        name="{if condition="$lc eq $content_lang_default"}art_class{else/}content_lang[{$lc}][art_class]{/if}"
+                                        value="{if condition="$lc eq $content_lang_default"}{$info.art_class}{else/}{$content_lang_data[$lc]['art_class']|default=''}{/if}">
+                                    {if condition="$lc neq $content_lang_default and $content_translate_available"}
+                                    <button type="button" class="layui-btn layui-btn-xs cl-translate-btn" data-lang="{$lc}" data-field="art_class" data-src="[name=&quot;art_class&quot;]">{:lang('admin/vod/content_lang_translate_btn')}</button>
+                                    {/if}
+                                </div>
+                                {if condition="$lc eq $content_lang_default"}
+                                <div class="layui-input-inline w500 art_class_label">
+
+                                </div>
+                                {/if}
+                            </div>
+                            <div class="layui-form-item">
+                                <label class="layui-form-label">{:lang('blurb')}：</label>
+                                <div class="layui-input-block">
+                                    <textarea class="layui-textarea" style="height:40px;" placeholder="{:lang('blurb_auto_tip')}"
+                                        id="{if condition="$lc eq $content_lang_default"}art_blurb{else/}cl_{$lc}_art_blurb{/if}"
+                                        name="{if condition="$lc eq $content_lang_default"}art_blurb{else/}content_lang[{$lc}][art_blurb]{/if}">{if condition="$lc eq $content_lang_default"}{$info.art_blurb}{else/}{$content_lang_data[$lc]['art_blurb']|default=''}{/if}</textarea>
+                                    {if condition="$lc neq $content_lang_default and $content_translate_available"}
+                                    <button type="button" class="layui-btn layui-btn-xs cl-translate-btn" data-lang="{$lc}" data-field="art_blurb" data-src="[name=&quot;art_blurb&quot;]">{:lang('admin/vod/content_lang_translate_btn')}</button>
+                                    {/if}
+                                </div>
+                            </div>
+                            <div class="layui-form-item">
+                                <div>
+                                {if condition="$lc eq $content_lang_default"}
+                                <div id="artlist" class="contents" data-lang="{$content_lang_default}">
+                                    {volist name="$art_page_list" id="vo"}
+                                    <div class="layui-form-item" data-i="{$key}">
+                                        <label class="layui-form-label">{:lang('page_content')}{$key}：</label>
+                                        <div class="layui-input-inline w200"><input type="text" name="art_title[]" class="layui-input" value="{$vo.title}" placeholder="{:lang('page_title')}"></div>
+                                        <div class="layui-input-inline w200"><input type="text" name="art_note[]" class="layui-input" value="{$vo.note}" placeholder="{:lang('page_note')}"></div>
+                                        <div class="layui-input-inline w200"><a href="javascript:void(0)" class="j-editor-clear">{:lang('clear')}</a>&nbsp;<a href="javascript:void(0)" class="j-editor-remove">{:lang('del')}</a>&nbsp;<a href="javascript:void(0)" class="j-editor-up">上移</a>&nbsp;<a href="javascript:void(0)" class="j-editor-down">下移</a>&nbsp;<br></div>
+                                        <div class="p10 m20"></div>
+                                        <div class="layui-input-block"><textarea id="art_content{$key}" name="art_content[]" type="text/plain" style="width:100%;height:250px">{$vo.content|mac_url_content_img}</textarea></div>
+                                        <script>ueArrayMap['{$content_lang_default}'][{$key}] = editor_getEditor('art_content{$key}');</script>
+                                    </div>
+                                    {/volist}
+                                </div>
+                                <button class="layui-btn radius j-editor-add" type="button" data-lang="{$content_lang_default}">{:lang('page_add')}</button>
+                                {else /}
+                                <div id="artlist_{$lc}" class="contents" data-lang="{$lc}">
+                                    {volist name="$content_lang_page_list[$lc]" id="vo"}
+                                    <div class="layui-form-item" data-i="{$key}">
+                                        <label class="layui-form-label">{:lang('page_content')}{$key}：</label>
+                                        <div class="layui-input-inline w200"><input type="text" name="content_lang[{$lc}][art_title][]" class="layui-input" value="{$vo.title}" placeholder="{:lang('page_title')}"></div>
+                                        <div class="layui-input-inline w200"><input type="text" name="content_lang[{$lc}][art_note][]" class="layui-input" value="{$vo.note}" placeholder="{:lang('page_note')}"></div>
+                                        <div class="layui-input-inline w200"><a href="javascript:void(0)" class="j-editor-clear">{:lang('clear')}</a>&nbsp;<a href="javascript:void(0)" class="j-editor-remove">{:lang('del')}</a>&nbsp;<a href="javascript:void(0)" class="j-editor-up">上移</a>&nbsp;<a href="javascript:void(0)" class="j-editor-down">下移</a>&nbsp;<br></div>
+                                        <div class="p10 m20"></div>
+                                        <div class="layui-input-block"><textarea id="cl_{$lc}_art_content{$key}" name="content_lang[{$lc}][art_content][]" type="text/plain" style="width:100%;height:250px">{$vo.content|mac_url_content_img}</textarea></div>
+                                        <script>ueArrayMap['{$lc}'][{$key}] = editor_getEditor('cl_{$lc}_art_content{$key}');</script>
+                                    </div>
+                                    {/volist}
+                                </div>
+                                <button class="layui-btn radius j-editor-add" type="button" data-lang="{$lc}">{:lang('page_add')}</button>
+                                {/if}
+                                </div>
+                            </div>
+                        </div>
+                        {/volist}
+                    </div>
+                </div>
+                {else /}
+                <div class="layui-form-item">
+                    <label class="layui-form-label">{:lang('name')}：</label>
+                    <div class="layui-input-inline w500">
+                        <input type="text" class="layui-input" lay-verify="art_name" value="{$info.art_name}" placeholder="" name="art_name">
+                    </div>
+                    <label class="layui-form-label">{:lang('sub')}：</label>
+                    <div class="layui-input-inline ">
+                        <input type="text" class="layui-input" value="{$info.art_sub}" placeholder="" name="art_sub">
+                    </div>
+                </div>
+                <div class="layui-form-item">
+                    <label class="layui-form-label">{:lang('en')}：</label>
+                    <div class="layui-input-inline w500">
+                        <input type="text" class="layui-input" value="{$info.art_en}" placeholder="" name="art_en">
+                    </div>
+                    <label class="layui-form-label">{:lang('letter')}：</label>
+                    <div class="layui-input-inline w70">
+                        <input type="text" class="layui-input" value="{$info.art_letter}" placeholder="" name="art_letter">
+                    </div>
+                </div>
+                <div class="layui-form-item">
+                    <label class="layui-form-label">TAG：</label>
+                    <div class="layui-input-inline w500">
+                        <input type="text" class="layui-input" value="{$info.art_tag}" placeholder="" name="art_tag">
+                    </div>
+                    <div class="layui-input-inline w120">
+                        <input type="checkbox" name="uptag" title="{:lang('auto_make')}" value="1" class="layui-checkbox checkbox-ids" lay-skin="primary">
+                    </div>
+                </div>
+                <div class="layui-form-item">
+                    <label class="layui-form-label">{:lang('remarks')}：</label>
+                    <div class="layui-input-inline w500">
+                        <input type="text" class="layui-input" value="{$info.art_remarks}" placeholder="" name="art_remarks">
+                    </div>
+                </div>
+                <div class="layui-form-item">
+                    <label class="layui-form-label">{:lang('class')}：</label>
+                    <div class="layui-input-inline w500">
+                        <input type="text" class="layui-input" value="{$info.art_class}" placeholder="" id="art_class" name="art_class">
+                    </div>
+                    <div class="layui-input-inline w500 art_class_label">
+
+                    </div>
+                </div>
                 <div class="layui-form-item">
                         <label class="layui-form-label">{:lang('blurb')}：</label>
                     <div class="layui-input-block">
                         <textarea name="art_blurb" cols="" rows="3" class="layui-textarea"  placeholder="{:lang('blurb_auto_tip')}" style="height:40px;">{$info.art_blurb}</textarea>
                     </div>
                 </div>
-
-                    <script>
-                        var ueArray=[];
-                        var content_arr_len = {$art_page_list|count};
-                    </script>
-
-                <div id="artlist" class="contents">
-                    {volist name="$art_page_list" id="vo"}
-                    <div class="layui-form-item" data-i="{$key}">
-                        <label class="layui-form-label">{:lang('page_content')}{$key}：</label>
-                        <div class="layui-input-inline w200"><input type="text" name="art_title[]" class="layui-input" value="{$vo.title}" placeholder="{:lang('page_title')}"></div>
-                        <div class="layui-input-inline w200"><input type="text" name="art_note[]" class="layui-input" value="{$vo.note}" placeholder="{:lang('page_note')}"></div>
-                        <div class="layui-input-inline w200"><a href="javascript:void(0)" class="j-editor-clear">{:lang('clear')}</a>&nbsp;<a href="javascript:void(0)" class="j-editor-remove">{:lang('del')}</a>&nbsp;<a href="javascript:void(0)" class="j-editor-up">上移</a>&nbsp;<a href="javascript:void(0)" class="j-editor-down">下移</a>&nbsp;<br></div>
-                        <div class="p10 m20"></div>
-                        <div class="layui-input-block"><textarea id="art_content{$key}" name="art_content[]" type="text/plain" style="width:100%;height:250px">{$vo.content|mac_url_content_img}</textarea></div>
-                        <script>ueArray[{$key}] = editor_getEditor('art_content{$key}');</script>
-                    </div>
-                    {/volist}
-                </div>
-
-
-                    <div class="layui-form-item">
-                        <label class=""><button class="layui-btn radius j-editor-add" type="button">{:lang('page_add')}</button></label>
-                        <div class="layui-input-block">
-
+                <div class="layui-form-item">
+                    <label class="layui-form-label">{:lang('page_content')}：</label>
+                    <div class="layui-input-block">
+                    <div id="artlist" class="contents" data-lang="{$content_lang_default}">
+                        {volist name="$art_page_list" id="vo"}
+                        <div class="layui-form-item" data-i="{$key}">
+                            <label class="layui-form-label">{:lang('page_content')}{$key}：</label>
+                            <div class="layui-input-inline w200"><input type="text" name="art_title[]" class="layui-input" value="{$vo.title}" placeholder="{:lang('page_title')}"></div>
+                            <div class="layui-input-inline w200"><input type="text" name="art_note[]" class="layui-input" value="{$vo.note}" placeholder="{:lang('page_note')}"></div>
+                            <div class="layui-input-inline w200"><a href="javascript:void(0)" class="j-editor-clear">{:lang('clear')}</a>&nbsp;<a href="javascript:void(0)" class="j-editor-remove">{:lang('del')}</a>&nbsp;<a href="javascript:void(0)" class="j-editor-up">上移</a>&nbsp;<a href="javascript:void(0)" class="j-editor-down">下移</a>&nbsp;<br></div>
+                            <div class="p10 m20"></div>
+                            <div class="layui-input-block"><textarea id="art_content{$key}" name="art_content[]" type="text/plain" style="width:100%;height:250px">{$vo.content|mac_url_content_img}</textarea></div>
+                            <script>ueArrayMap['{$content_lang_default}'][{$key}] = editor_getEditor('art_content{$key}');</script>
                         </div>
+                        {/volist}
                     </div>
-                    
+                    <button class="layui-btn radius j-editor-add" type="button" data-lang="{$content_lang_default}">{:lang('page_add')}</button>
+                    </div>
+                </div>
+                {/if}
                 </div>
 
                 <div class="layui-tab-item" id="movementTable">
@@ -498,49 +654,72 @@
         });
 
         $('.contents').on('click','.j-editor-clear',function(){
-            var datai = $(this).parent().parent().attr('data-i');
-            editor_setContent(ueArray[datai],'');
+            var $item = $(this).closest('[data-i]');
+            var lang = $item.closest('.contents').data('lang');
+            var datai = $item.attr('data-i');
+            editor_setContent(ueArrayMap[lang][datai],'');
         });
         $('.contents').on('click','.j-editor-remove',function(){
-            var datai = $(this).parent().parent().attr('data-i');
-            $(this).parent().parent().remove();
-            delete ueArray[datai];
+            var $item = $(this).closest('[data-i]');
+            var lang = $item.closest('.contents').data('lang');
+            var datai = $item.attr('data-i');
+            $item.remove();
+            delete ueArrayMap[lang][datai];
         });
         $('.contents').on('click','.j-editor-up',function(){
-            var current = $(this).parent().parent();
+            var current = $(this).closest('[data-i]');
+            var lang = current.closest('.contents').data('lang');
             var current_index = current.index();
             var current_i = current.attr('data-i');
             var prev = current.prev();
             var prev_i = prev.attr('data-i');
             if(current_index>0){
-                var current_txt = editor_getContent(ueArray[current_i]);
-                var prev_txt = editor_getContent(ueArray[prev_i]);
-                editor_setContent(ueArray[current_i],prev_txt);
-                editor_setContent(ueArray[prev_i],current_txt);
+                var current_txt = editor_getContent(ueArrayMap[lang][current_i]);
+                var prev_txt = editor_getContent(ueArrayMap[lang][prev_i]);
+                editor_setContent(ueArrayMap[lang][current_i],prev_txt);
+                editor_setContent(ueArrayMap[lang][prev_i],current_txt);
             }
         });
         $('.contents').on('click','.j-editor-down',function(){
-            var current = $(this).parent().parent();
+            var current = $(this).closest('[data-i]');
+            var lang = current.closest('.contents').data('lang');
             var current_index = current.index();
             var current_i = current.attr('data-i');
             var next = current.next();
             var next_i = next.attr('data-i');
 
             if(next.length>0){
-                var current_txt = editor_getContent(ueArray[current_i]);
-                var prev_txt = editor_getContent(ueArray[next_i]);
+                var current_txt = editor_getContent(ueArrayMap[lang][current_i]);
+                var next_txt = editor_getContent(ueArrayMap[lang][next_i]);
 
-                editor_setContent(ueArray[current_i],prev_txt);
-                editor_setContent(ueArray[next_i],current_txt);
+                editor_setContent(ueArrayMap[lang][current_i],next_txt);
+                editor_setContent(ueArrayMap[lang][next_i],current_txt);
             }
         });
 
-        $('.j-editor-add').on('click',function(){
-            content_arr_len++;
-            var tpl='<div class="layui-form-item" data-i="'+content_arr_len+'"><label class="layui-form-label">{:lang('page_content')}'+(content_arr_len)+'：</label><div class="layui-input-inline w200"><input type="text" name="art_title[]" class="layui-input" placeholder="{:lang('page_title')}"></div><div class="layui-input-inline w200"><input type="text" name="art_note[]" class="layui-input" placeholder="{:lang('页备注')}"></div><div class="layui-input-inline w200 p10"><a href="javascript:void(0)" class="j-editor-clear">{:lang('clear')}</a>&nbsp;<a href="javascript:void(0)" class="j-editor-remove">{:lang('del')}</a>&nbsp;<a href="javascript:void(0)" class="j-editor-up">上移</a>&nbsp;<a href="javascript:void(0)" class="j-editor-down">下移</a>&nbsp;<br></div><div class="p10 m20"></div><div class="layui-input-block"><textarea id="art_content'+(content_arr_len)+'" name="art_content[]" type="text/plain" style="width:100%;height:250px"></textarea></div></div>';
-            $(".contents").append(tpl);
-            ueArray[content_arr_len] = editor_getEditor( 'art_content'+content_arr_len );
+        function addContentPage(lang, n){
+            var isDefault = (lang === '{$content_lang_default}');
+            var idPrefix = isDefault ? 'art_content' : ('cl_' + lang + '_art_content');
+            var titleName = isDefault ? 'art_title[]' : ('content_lang[' + lang + '][art_title][]');
+            var noteName = isDefault ? 'art_note[]' : ('content_lang[' + lang + '][art_note][]');
+            var contentName = isDefault ? 'art_content[]' : ('content_lang[' + lang + '][art_content][]');
+            var tpl='<div class="layui-form-item" data-i="'+n+'"><label class="layui-form-label">{:lang('page_content')}'+n+'：</label><div class="layui-input-inline w200"><input type="text" name="'+titleName+'" class="layui-input" placeholder="{:lang('page_title')}"></div><div class="layui-input-inline w200"><input type="text" name="'+noteName+'" class="layui-input" placeholder="{:lang('页备注')}"></div><div class="layui-input-inline w200 p10"><a href="javascript:void(0)" class="j-editor-clear">{:lang('clear')}</a>&nbsp;<a href="javascript:void(0)" class="j-editor-remove">{:lang('del')}</a>&nbsp;<a href="javascript:void(0)" class="j-editor-up">上移</a>&nbsp;<a href="javascript:void(0)" class="j-editor-down">下移</a>&nbsp;<br></div><div class="p10 m20"></div><div class="layui-input-block"><textarea id="'+idPrefix+n+'" name="'+contentName+'" type="text/plain" style="width:100%;height:250px"></textarea></div></div>';
+            $('.contents[data-lang="'+lang+'"]').append(tpl);
+            ueArrayMap[lang][n] = editor_getEditor( idPrefix+n );
+            contentArrLenMap[lang] = n;
+        }
 
+        $('.j-editor-add').on('click',function(){
+            var lang = $(this).data('lang');
+            var n = contentArrLenMap[lang] + 1;
+            addContentPage(lang, n);
+            //所有语言的页数要保持一致，未翻译的语言用空白页补齐，避免切换语言tab时页数对不上
+            for (var otherLang in contentArrLenMap) {
+                if (otherLang === lang) { continue; }
+                while (contentArrLenMap[otherLang] < n) {
+                    addContentPage(otherLang, contentArrLenMap[otherLang] + 1);
+                }
+            }
         });
 
         $(document).on('click', '.del_screenshot', function() {
@@ -558,9 +737,11 @@
             input.val(snsArr.join('\r\n'));//重新赋值
             $.get("{:url('annex/del')}", {ids:src}, function(res){});
         });
-        if(content_arr_len==0){
-            $('.j-editor-add').click();
+        {volist name="content_lang_enabled" id="lc"}
+        if(contentArrLenMap['{$lc}']==0){
+            $('.j-editor-add[data-lang="{$lc}"]').click();
         }
+        {/volist}
     });
 
     function getExtend(id){
@@ -584,7 +765,37 @@
         getExtend('{$info.type_id}')
     },1000);
     {/if}
-    
+
+    // 内容级多语言：单字段自动翻译（保存随主表单一起提交，不单独 ajax 保存）
+    $('.cl-translate-btn').on('click', function () {
+        var $btn = $(this);
+        var lang = $btn.data('lang');
+        var field = $btn.data('field');
+        var srcSel = $btn.data('src');
+        var srcText = $(srcSel).val();
+        if (!srcText) {
+            layer.msg("{:lang('name_empty')}");
+            return;
+        }
+        $btn.prop('disabled', true);
+        $.post("{:url('art/contentLangTranslate')}", {
+            text: srcText,
+            from: "{$content_lang_default|default='zh-cn'}",
+            to: lang,
+            __token__: "{:mac_admin_csrf_token()}"
+        }, function (r) {
+            $btn.prop('disabled', false);
+            if (r && r.code == 1) {
+                $('#cl_' + lang + '_' + field).val(r.data);
+            } else {
+                layer.msg((r && r.msg) ? r.msg : "{:lang('admin/vod/content_lang_translate_err')}");
+            }
+        }, 'json').fail(function () {
+            $btn.prop('disabled', false);
+            layer.msg("{:lang('admin/vod/content_lang_translate_err')}");
+        });
+    });
+
 </script>
 
 </body>

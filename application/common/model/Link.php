@@ -95,6 +95,7 @@ class Link extends Base {
             return ['code'=>1002,'msg'=>lang('obtain_err')];
         }
         $info = $info->toArray();
+        $info = mac_content_lang_overlay('link', $info);
 
         return ['code'=>1,'msg'=>lang('obtain_ok'),'info'=>$info];
     }
@@ -115,19 +116,24 @@ class Link extends Base {
         else{
             $data['link_add_time'] = time();
             $res = $this->allowField(true)->insert($data);
+            if(false !== $res){
+                $data['link_id'] = $this->getLastInsID();
+            }
         }
         if(false === $res){
             return ['code'=>1002,'msg'=>lang('save_err').'：'.$this->getError() ];
         }
-        return ['code'=>1,'msg'=>lang('save_ok')];
+        return ['code'=>1,'msg'=>lang('save_ok'),'link_id'=>$data['link_id']];
     }
 
     public function delData($where)
     {
+        $delIds = $this->where($where)->column('link_id');
         $res = $this->where($where)->delete();
         if($res===false){
             return ['code'=>1001,'msg'=>lang('del_err').'：'.$this->getError() ];
         }
+        \app\common\model\ContentLang::deleteByContent('link', $delIds);
         return ['code'=>1,'msg'=>lang('del_ok')];
     }
 

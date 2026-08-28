@@ -468,11 +468,6 @@ class Art extends Base {
                 return ['code' => 1002, 'msg' => lang('obtain_err')];
             }
             $info = $info->toArray();
-            //内容
-            if (!empty($info['art_content'])) {
-                $info['art_page_list'] = mac_art_list($info['art_title'], $info['art_note'], $info['art_content']);
-                $info['art_page_total'] = count($info['art_page_list']);
-            }
             if(!empty($info['art_pic_screenshot'])){
                 $info['art_pic_screenshot_list'] = mac_screenshot_list($info['art_pic_screenshot']);
             }
@@ -493,6 +488,11 @@ class Art extends Base {
             if($GLOBALS['config']['app']['cache_core']==1 && $data_cache && $cache==1) {
                 Cache::set($key, $info);
             }
+        }
+        $info = mac_content_lang_overlay('art', $info);
+        if (!empty($info['art_content'])) {
+            $info['art_page_list'] = mac_art_list($info['art_title'], $info['art_note'], $info['art_content']);
+            $info['art_page_total'] = count($info['art_page_list']);
         }
         return ['code'=>1,'msg'=>lang('obtain_ok'),'info'=>$info];
     }
@@ -611,7 +611,7 @@ class Art extends Base {
         }
         MeilisearchSync::afterArtSave($ixArtId);
 
-        return ['code'=>1,'msg'=>lang('save_ok')];
+        return ['code'=>1,'msg'=>lang('save_ok'),'art_id'=>$ixArtId];
     }
 
     public function delData($where)
@@ -629,7 +629,9 @@ class Art extends Base {
         }
         $where = $this->mergeRecycleWhere($where);
         $path = './';
+        $delIds = [];
         foreach($list['list'] as $k=>$v){
+            $delIds[] = intval($v['art_id']);
             MeilisearchSync::deleteArt(intval($v['art_id']));
             mac_safe_unlink_upload($v['art_pic']);
             mac_safe_unlink_upload($v['art_pic_thumb']);
@@ -646,6 +648,7 @@ class Art extends Base {
         if($res===false){
             return ['code'=>1001,'msg'=>lang('del_err').'：'.$this->getError() ];
         }
+        \app\common\model\ContentLang::deleteByContent('art', $delIds);
 
         return ['code'=>1,'msg'=>lang('del_ok')];
     }

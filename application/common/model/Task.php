@@ -39,6 +39,7 @@ class Task extends Base {
             return ['code' => 1002, 'msg' => lang('obtain_err')];
         }
         $info = $info->toArray();
+        $info = mac_content_lang_overlay('task', $info);
         return ['code' => 1, 'msg' => lang('obtain_ok'), 'info' => $info];
     }
 
@@ -52,19 +53,24 @@ class Task extends Base {
         } else {
             $data['task_time_add'] = time();
             $res = $this->allowField(true)->insert($data);
+            if (false !== $res) {
+                $data['task_id'] = $this->getLastInsID();
+            }
         }
         if (false === $res) {
             return ['code' => 1002, 'msg' => lang('save_err') . '：' . $this->getError()];
         }
-        return ['code' => 1, 'msg' => lang('save_ok')];
+        return ['code' => 1, 'msg' => lang('save_ok'), 'task_id' => $data['task_id']];
     }
 
     public function delData($where)
     {
+        $delIds = $this->where($where)->column('task_id');
         $res = $this->where($where)->delete();
         if ($res === false) {
             return ['code' => 1001, 'msg' => lang('del_err') . '：' . $this->getError()];
         }
+        \app\common\model\ContentLang::deleteByContent('task', $delIds);
         return ['code' => 1, 'msg' => lang('del_ok')];
     }
 

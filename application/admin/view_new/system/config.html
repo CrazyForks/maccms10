@@ -739,6 +739,47 @@
                     </div>
 
                     <div class="layui-form-item">
+                        <label class="layui-form-label">{:lang('admin/system/config/content_lang_list')}：</label>
+                        <div class="layui-input-inline w600">
+                            <input type="checkbox" lay-skin="primary" lay-filter="content_lang_list" name="app[content_lang_list][]" value="zh-cn"
+                                title="简体中文" {if condition="strpos($config['app']['content_lang_list'],'zh-cn') !==false"}checked {/if} form="form_config_main">
+                            <input type="checkbox" lay-skin="primary" lay-filter="content_lang_list" name="app[content_lang_list][]" value="zh-tw"
+                                title="繁體中文" {if condition="strpos($config['app']['content_lang_list'],'zh-tw') !==false"}checked {/if} form="form_config_main">
+                            <input type="checkbox" lay-skin="primary" lay-filter="content_lang_list" name="app[content_lang_list][]" value="en-us"
+                                title="English" {if condition="strpos($config['app']['content_lang_list'],'en-us') !==false"}checked {/if} form="form_config_main">
+                            <input type="checkbox" lay-skin="primary" lay-filter="content_lang_list" name="app[content_lang_list][]" value="ja-jp"
+                                title="日本語" {if condition="strpos($config['app']['content_lang_list'],'ja-jp') !==false"}checked {/if} form="form_config_main">
+                            <input type="checkbox" lay-skin="primary" lay-filter="content_lang_list" name="app[content_lang_list][]" value="ko-kr"
+                                title="한국어" {if condition="strpos($config['app']['content_lang_list'],'ko-kr') !==false"}checked {/if} form="form_config_main">
+                            <input type="checkbox" lay-skin="primary" lay-filter="content_lang_list" name="app[content_lang_list][]" value="de-de"
+                                title="Deutsch" {if condition="strpos($config['app']['content_lang_list'],'de-de') !==false"}checked {/if} form="form_config_main">
+                            <input type="checkbox" lay-skin="primary" lay-filter="content_lang_list" name="app[content_lang_list][]" value="fr-fr"
+                                title="Français" {if condition="strpos($config['app']['content_lang_list'],'fr-fr') !==false"}checked {/if} form="form_config_main">
+                            <input type="checkbox" lay-skin="primary" lay-filter="content_lang_list" name="app[content_lang_list][]" value="es-es"
+                                title="Español" {if condition="strpos($config['app']['content_lang_list'],'es-es') !==false"}checked {/if} form="form_config_main">
+                            <input type="checkbox" lay-skin="primary" lay-filter="content_lang_list" name="app[content_lang_list][]" value="pt-pt"
+                                title="Português" {if condition="strpos($config['app']['content_lang_list'],'pt-pt') !==false"}checked {/if} form="form_config_main">
+                        </div>
+                        <div class="layui-form-mid layui-word-aux">{:lang('admin/system/config/content_lang_list_tip')}</div>
+                    </div>
+
+                    <div class="layui-form-item">
+                        <label class="layui-form-label">{:lang('admin/system/config/content_lang_default')}：</label>
+                        <div class="layui-input-inline w600">
+                            <input type="radio" lay-filter="content_lang_default" name="app[content_lang_default]" value="zh-cn" title="简体中文" {if condition="!isset($config['app']['content_lang_default']) or $config['app']['content_lang_default'] eq 'zh-cn'"}checked {/if} form="form_config_main">
+                            <input type="radio" lay-filter="content_lang_default" name="app[content_lang_default]" value="zh-tw" title="繁體中文" {if condition="$config['app']['content_lang_default'] eq 'zh-tw'"}checked {/if} form="form_config_main">
+                            <input type="radio" lay-filter="content_lang_default" name="app[content_lang_default]" value="en-us" title="English" {if condition="$config['app']['content_lang_default'] eq 'en-us'"}checked {/if} form="form_config_main">
+                            <input type="radio" lay-filter="content_lang_default" name="app[content_lang_default]" value="ja-jp" title="日本語" {if condition="$config['app']['content_lang_default'] eq 'ja-jp'"}checked {/if} form="form_config_main">
+                            <input type="radio" lay-filter="content_lang_default" name="app[content_lang_default]" value="ko-kr" title="한국어" {if condition="$config['app']['content_lang_default'] eq 'ko-kr'"}checked {/if} form="form_config_main">
+                            <input type="radio" lay-filter="content_lang_default" name="app[content_lang_default]" value="de-de" title="Deutsch" {if condition="$config['app']['content_lang_default'] eq 'de-de'"}checked {/if} form="form_config_main">
+                            <input type="radio" lay-filter="content_lang_default" name="app[content_lang_default]" value="fr-fr" title="Français" {if condition="$config['app']['content_lang_default'] eq 'fr-fr'"}checked {/if} form="form_config_main">
+                            <input type="radio" lay-filter="content_lang_default" name="app[content_lang_default]" value="es-es" title="Español" {if condition="$config['app']['content_lang_default'] eq 'es-es'"}checked {/if} form="form_config_main">
+                            <input type="radio" lay-filter="content_lang_default" name="app[content_lang_default]" value="pt-pt" title="Português" {if condition="$config['app']['content_lang_default'] eq 'pt-pt'"}checked {/if} form="form_config_main">
+                        </div>
+                        <div class="layui-form-mid layui-word-aux">{:lang('admin/system/config/content_lang_default_tip')}</div>
+                    </div>
+
+                    <div class="layui-form-item">
                         <label class="layui-form-label">{:lang('admin/system/config/search_art_rule')}：</label>
                         <div class="layui-input-inline w600">
                             <input type="checkbox" lay-skin="primary" name="app[search_art_rule][]" value="art_name"
@@ -1104,6 +1145,36 @@
                 $('.row_cache_server').show();
             }
         });
+
+        // 内容语言：默认语言必须始终在已启用列表里，未启用的语言不能被选为默认语言
+        function syncContentLangControls() {
+            $('input[name="app[content_lang_list][]"]').each(function () {
+                var val = $(this).val();
+                var $radio = $('input[name="app[content_lang_default]"][value="' + val + '"]');
+                if ($(this).is(':checked')) {
+                    $radio.removeAttr('disabled');
+                } else if ($radio.is(':checked')) {
+                    // 默认语言不能被停用：勾选状态改不掉，直接恢复
+                    $(this).prop('checked', true);
+                    $radio.removeAttr('disabled');
+                } else {
+                    $radio.attr('disabled', true);
+                }
+            });
+            form.render('checkbox');
+            form.render('radio');
+        }
+
+        form.on('checkbox(content_lang_list)', function () {
+            syncContentLangControls();
+        });
+
+        form.on('radio(content_lang_default)', function (data) {
+            $('input[name="app[content_lang_list][]"][value="' + data.value + '"]').prop('checked', true);
+            syncContentLangControls();
+        });
+
+        syncContentLangControls();
 
         element.on('tab(tb1)', function () {
             $.cookie('config_tab', this.getAttribute('lay-id'));

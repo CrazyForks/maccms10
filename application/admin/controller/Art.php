@@ -277,9 +277,28 @@ class Art extends Base
     {
         if (Request()->isPost()) {
             $param = input('post.');
+            $contentLang = $param['content_lang'] ?? [];
+            unset($param['content_lang']);
             $res = model('Art')->saveData($param);
             if($res['code']>1){
                 return $this->error($res['msg']);
+            }
+            $artId = (int)($res['art_id'] ?? 0);
+            if ($artId > 0 && is_array($contentLang)) {
+                //默认语言以原始行为准，只写非默认语言的译文（见 mac_content_lang_overlay 注释）
+                $defaultLang = mac_content_lang_default();
+                foreach ($contentLang as $langCode => $fields) {
+                    if ((string)$langCode === $defaultLang || !is_array($fields)) {
+                        continue;
+                    }
+                    //页内容是分页数组，与默认语言一样以 $$$ 拼接成单个字符串再存
+                    if (isset($fields['art_content']) && is_array($fields['art_content'])) {
+                        $fields['art_content'] = join('$$$', $fields['art_content']);
+                        $fields['art_title'] = join('$$$', (array)($fields['art_title'] ?? []));
+                        $fields['art_note'] = join('$$$', (array)($fields['art_note'] ?? []));
+                    }
+                    model('ContentLang')->saveFields('art', $artId, (string)$langCode, $fields, 'manual', 1);
+                }
             }
             return $this->success($res['msg']);
         }
@@ -305,8 +324,71 @@ class Art extends Base
         $type_tree = model('Type')->getCache('type_tree');
         $this->assign('type_tree',$type_tree);
 
+        //内容级多语言：默认语言永远排第一位（即便后台没勾选它），其后跟已启用的其它语言
+        $content_lang_default = mac_content_lang_default();
+        $content_lang_enabled = array_values(array_unique(array_merge([$content_lang_default], mac_content_lang_allow_list())));
+        $content_lang_data = [];
+        $content_lang_page_list = [];
+        foreach ($content_lang_enabled as $langCode) {
+            if ($langCode !== $content_lang_default) {
+                $content_lang_page_list[$langCode] = [];
+            }
+        }
+        if (!empty($info['art_id'])) {
+            foreach ($content_lang_enabled as $langCode) {
+                $fields = model('ContentLang')->getFields('art', $info['art_id'], $langCode);
+                $content_lang_data[$langCode] = $fields;
+                if ($langCode !== $content_lang_default) {
+                    $content_lang_page_list[$langCode] = mac_art_list(
+                        $fields['art_title'] ?? '',
+                        $fields['art_note'] ?? '',
+                        $fields['art_content'] ?? ''
+                    );
+                }
+            }
+            //默认语言分页列表已由 Art::infoData() 按原始行算好并 assign，这里只处理其它语言
+
+            //其它语言分页数应跟默认语言保持一致，尚未翻译的页用空白页补齐，避免切换语言tab时页数对不上
+            $pageTotal = count((array)$info['art_page_list']);
+            foreach ($content_lang_enabled as $langCode) {
+                if ($langCode === $content_lang_default) {
+                    continue;
+                }
+                for ($i = count($content_lang_page_list[$langCode] ?? []) + 1; $i <= $pageTotal; $i++) {
+                    $content_lang_page_list[$langCode][$i] = ['page' => $i, 'title' => '', 'note' => '', 'content' => ''];
+                }
+            }
+        }
+        $this->assign('content_lang_default', $content_lang_default);
+        $this->assign('content_lang_enabled', $content_lang_enabled);
+        $this->assign('content_lang_multi', count($content_lang_enabled) > 1);
+        $this->assign('content_lang_data', $content_lang_data);
+        $this->assign('content_lang_page_list', $content_lang_page_list);
+        $this->assign('content_translate_available', mac_content_translate_available());
+
         $this->assign('title',lang('admin/art/title'));
         return $this->fetch('admin@art/info');
+    }
+
+    /**
+     * 调用已安装的翻译插件（若有）翻译单个字段；没有插件注册时返回空字符串，前端据此禁用按钮。
+     */
+    public function contentLangTranslate()
+    {
+        $text = (string)input('post.text', '');
+        $from = (string)input('post.from', mac_content_lang_default());
+        $to = (string)input('post.to', '');
+        if ($text === '' || $to === '') {
+            return $this->error(lang('param_err'));
+        }
+        if (!mac_content_translate_rate_limit($this->_admin['admin_id'])) {
+            return $this->error(lang('frequently'));
+        }
+        $result = mac_content_translate($text, $from, $to, ['content_type' => 'art']);
+        if ($result === '') {
+            return $this->error(lang('admin/vod/content_lang_translate_err'));
+        }
+        return json(['code' => 1, 'msg' => 'ok', 'data' => $result]);
     }
 
     public function aiSeoGenerate()

@@ -118,6 +118,16 @@ class System extends Base
 
             $config['app']['search_vod_rule'] = join('|', !empty($config['app']['search_vod_rule']) ? (array)$config['app']['search_vod_rule'] : []);
             $config['app']['search_art_rule'] = join('|', !empty($config['app']['search_art_rule']) ? (array)$config['app']['search_art_rule'] : []);
+            $contentLangKnown = ['zh-cn', 'zh-tw', 'en-us', 'ja-jp', 'ko-kr', 'de-de', 'fr-fr', 'es-es', 'pt-pt'];
+            if (empty($config['app']['content_lang_default']) || !in_array($config['app']['content_lang_default'], $contentLangKnown, true)) {
+                $config['app']['content_lang_default'] = 'zh-cn';
+            }
+            $contentLangList = !empty($config['app']['content_lang_list']) ? (array)$config['app']['content_lang_list'] : [];
+            //默认语言必须始终在已启用列表里：前端已做了联动限制，这里再兜底一次，防止绕过表单直接提交
+            if (!in_array($config['app']['content_lang_default'], $contentLangList, true)) {
+                $contentLangList[] = $config['app']['content_lang_default'];
+            }
+            $config['app']['content_lang_list'] = join('|', $contentLangList);
             $config['app']['vod_search_optimise'] = join('|', !empty($config['app']['vod_search_optimise']) ? (array)$config['app']['vod_search_optimise'] : []);
             $config['app']['vod_search_optimise_cache_minutes'] = (int)$config['app']['vod_search_optimise_cache_minutes'];
 

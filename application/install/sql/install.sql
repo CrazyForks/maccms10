@@ -2238,3 +2238,23 @@ INSERT INTO `mac_monitor_alert_rule` (`rule_name`,`rule_status`,`rule_source`,`r
 ('PV 异常暴涨',0,'analytics','analytics.pv','last',60,'gt',0.0000,0,1,120,60,'notify','zscore','{"k":4,"baseline_days":14,"min_sample":7,"min_abs":50}'),
 ('UV 异常暴跌',0,'analytics','analytics.uv','last',60,'lt',0.0000,0,2,120,60,'notify','zscore','{"k":3,"baseline_days":14,"min_sample":7,"min_abs":30}'),
 ('跳出率飙升',0,'analytics','analytics.bounce_rate','last',1440,'gt',0.0000,0,2,720,720,'notify','zscore','{"k":3,"baseline_days":14,"min_sample":7,"min_abs":10}');
+
+-- -----------------------------------------------------------------------------
+-- Table structure for mac_content_lang
+-- 内容级多语言：每个 (content_type, content_id, lang_code) 一行，
+-- 可翻译字段整体存成 JSON，缺失时由调用方回退到默认语言原文，
+-- 新增语言不需要改表结构。
+-- -----------------------------------------------------------------------------
+DROP TABLE IF EXISTS `mac_content_lang`;
+CREATE TABLE `mac_content_lang` (
+  `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
+  `content_type` varchar(20) NOT NULL DEFAULT '' COMMENT 'vod|art',
+  `content_id` int(10) unsigned NOT NULL DEFAULT '0',
+  `lang_code` varchar(10) NOT NULL DEFAULT '' COMMENT '如 en-us、ja-jp',
+  `data` mediumtext COMMENT 'JSON: {vod_name, vod_sub, vod_blurb, vod_content, ...}',
+  `status` tinyint(1) unsigned NOT NULL DEFAULT '0' COMMENT '0=机翻未校对 1=已人工校对',
+  `source` varchar(10) NOT NULL DEFAULT 'manual' COMMENT 'manual|mt',
+  `update_time` int(10) unsigned NOT NULL DEFAULT '0',
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `uniq_item_lang` (`content_type`,`content_id`,`lang_code`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;

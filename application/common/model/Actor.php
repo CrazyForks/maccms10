@@ -393,6 +393,7 @@ class Actor extends Base {
                 Cache::set($key, $info);
             }
         }
+        $info = mac_content_lang_overlay('actor', $info);
         return ['code'=>1,'msg'=>lang('obtain_ok'),'info'=>$info];
     }
 
@@ -493,7 +494,7 @@ class Actor extends Base {
         $ixActorId = !empty($data['actor_id']) ? intval($data['actor_id']) : intval($this->getLastInsID());
         MeilisearchSync::afterActorSave($ixActorId);
 
-        return ['code'=>1,'msg'=>lang('save_ok')];
+        return ['code'=>1,'msg'=>lang('save_ok'),'actor_id'=>$ixActorId];
     }
 
     public function delData($where)
@@ -503,7 +504,9 @@ class Actor extends Base {
             return ['code'=>1001,'msg'=>lang('del_err').'：'.$this->getError() ];
         }
         $path = './';
+        $delIds = [];
         foreach($list['list'] as $k=>$v){
+            $delIds[] = intval($v['actor_id']);
             MeilisearchSync::deleteActor(intval($v['actor_id']));
             mac_safe_unlink_upload($v['actor_pic']);
             if($GLOBALS['config']['view']['actor_detail'] ==2 ){
@@ -518,6 +521,7 @@ class Actor extends Base {
         if($res===false){
             return ['code'=>1001,'msg'=>lang('del_err').'：'.$this->getError() ];
         }
+        \app\common\model\ContentLang::deleteByContent('actor', $delIds);
         return ['code'=>1,'msg'=>lang('del_ok')];
     }
 

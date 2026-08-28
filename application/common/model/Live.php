@@ -46,6 +46,7 @@ class Live extends Base
             return ['code' => 1002, 'msg' => lang('obtain_err')];
         }
         $info = $info->toArray();
+        $info = mac_content_lang_overlay('live', $info);
         return ['code' => 1, 'msg' => lang('obtain_ok'), 'info' => $info];
     }
 
@@ -67,15 +68,18 @@ class Live extends Base
         if (false === $res) {
             return ['code' => 1002, 'msg' => lang('save_err') . '：' . $this->getError()];
         }
-        return ['code' => 1, 'msg' => lang('save_ok')];
+        $ixLiveId = !empty($data['live_id']) ? intval($data['live_id']) : intval($this->getLastInsID());
+        return ['code' => 1, 'msg' => lang('save_ok'), 'live_id' => $ixLiveId];
     }
 
     public function delData($where)
     {
+        $delIds = $this->where($where)->column('live_id');
         $res = $this->where($where)->delete();
         if ($res === false) {
             return ['code' => 1001, 'msg' => lang('del_err') . '：' . $this->getError()];
         }
+        \app\common\model\ContentLang::deleteByContent('live', $delIds);
         return ['code' => 1, 'msg' => lang('del_ok')];
     }
 

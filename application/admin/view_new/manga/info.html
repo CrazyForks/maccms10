@@ -65,44 +65,9 @@
                     </div>
 
                     <div class="layui-form-item">
-                        <label class="layui-form-label">{:lang('name')}：</label>
-                        <div class="layui-input-inline w500">
-                            <input type="text" class="layui-input" value="{$info.manga_name}" placeholder="" name="manga_name">
-                        </div>
-                        <label class="layui-form-label">{:lang('sub')}：</label>
-                        <div class="layui-input-inline ">
-                            <input type="text" class="layui-input" value="{$info.manga_sub}" placeholder="" name="manga_sub">
-                        </div>
-                    </div>
-
-                    <div class="layui-form-item">
-                        <label class="layui-form-label">{:lang('en')}：</label>
-                        <div class="layui-input-inline w500">
-                            <input type="text" class="layui-input" value="{$info.manga_en}" placeholder="" name="manga_en">
-                        </div>
-                        <label class="layui-form-label">{:lang('letter')}：</label>
-                        <div class="layui-input-inline w70">
-                            <input type="text" class="layui-input" value="{$info.manga_letter}" placeholder="" name="manga_letter">
-                        </div>
                         <label class="layui-form-label">{:lang('color')}：</label>
                         <div class="layui-input-inline w70">
                             <input type="text" class="layui-input color" value="{$info.manga_color}" placeholder="" name="manga_color">
-                        </div>
-                    </div>
-
-                    <div class="layui-form-item">
-                        <label class="layui-form-label">TAG：</label>
-                        <div class="layui-input-inline w500">
-                            <input type="text" class="layui-input" value="{$info.manga_tag}" placeholder="" name="manga_tag">
-                        </div>
-                        <div class="layui-input-inline w120">
-                            <input type="checkbox" name="uptag" title="{:lang('auto_make')}" value="1" class="layui-checkbox checkbox-ids" lay-skin="primary">
-                        </div>
-                    </div>
-                    <div class="layui-form-item">
-                        <label class="layui-form-label">{:lang('remarks')}：</label>
-                        <div class="layui-input-inline w500">
-                            <input type="text" class="layui-input" value="{$info.manga_remarks}" placeholder="例如：更新至20话" name="manga_remarks">
                         </div>
                     </div>
 
@@ -122,15 +87,6 @@
                         </div>
                         <div class="layui-input-inline ">
                             <a class="layui-btn j-iframe" data-href="{:url('manga/data')}?select=1&input=manga_rel_manga" href="javascript:;" title="{:lang('search_data')}">{:lang('search_data')}</a>
-                        </div>
-                    </div>
-
-                    <div class="layui-form-item">
-                        <label class="layui-form-label">{:lang('class')}：</label>
-                        <div class="layui-input-inline w500">
-                            <input type="text" class="layui-input" value="{$info.manga_class}" placeholder="" id="manga_class" name="manga_class">
-                        </div>
-                        <div class="layui-input-inline w500 manga_class_label">
                         </div>
                     </div>
 
@@ -162,6 +118,182 @@
                         </div>
                     </div>
 
+                    <blockquote class="layui-elem-quote layui-quote-nm">
+                        {:lang('admin/manga/content_lang_tip')}
+                    </blockquote>
+
+                    {if condition="$content_lang_multi"}
+                    <div class="layui-tab" lay-filter="content_lang_tab">
+                        <ul class="layui-tab-title">
+                            {volist name="content_lang_enabled" id="lc"}
+                            <li {if condition="$lc eq $content_lang_default"}class="layui-this"{/if}>{$lc}</li>
+                            {/volist}
+                        </ul>
+                        <div class="layui-tab-content">
+                            {volist name="content_lang_enabled" id="lc"}
+                            <div class="layui-tab-item {if condition="$lc eq $content_lang_default"}layui-show{/if}">
+                                {if condition="$lc neq $content_lang_default"}
+                                <div class="layui-form-item">
+                                    <label class="layui-form-label">{$lc}</label>
+                                    <div class="layui-input-inline">
+                                        {if condition="!empty($content_lang_data[$lc]['manga_name'])"}
+                                        <span class="layui-badge layui-bg-green">{:lang('admin/vod/content_lang_translated')}</span>
+                                        {else/}
+                                        <span class="layui-badge layui-bg-gray">{:lang('admin/vod/content_lang_untranslated')}</span>
+                                        {/if}
+                                    </div>
+                                </div>
+                                {/if}
+                                <div class="layui-form-item">
+                                    <label class="layui-form-label">{:lang('name')}：</label>
+                                    <div class="layui-input-inline w500">
+                                        <input type="text" class="layui-input"
+                                            lay-verify="{if condition="$lc eq $content_lang_default"}manga_name{/if}"
+                                            id="{if condition="$lc eq $content_lang_default"}manga_name{else/}cl_{$lc}_manga_name{/if}"
+                                            name="{if condition="$lc eq $content_lang_default"}manga_name{else/}content_lang[{$lc}][manga_name]{/if}"
+                                            value="{if condition="$lc eq $content_lang_default"}{$info.manga_name}{else/}{$content_lang_data[$lc]['manga_name']|default=''}{/if}">
+                                        {if condition="$lc neq $content_lang_default and $content_translate_available"}
+                                        <button type="button" class="layui-btn layui-btn-xs cl-translate-btn" data-lang="{$lc}" data-field="manga_name" data-src="[name=&quot;manga_name&quot;]">{:lang('admin/vod/content_lang_translate_btn')}</button>
+                                        {/if}
+                                    </div>
+                                    <label class="layui-form-label">{:lang('sub')}：</label>
+                                    <div class="layui-input-inline">
+                                        <input type="text" class="layui-input"
+                                            id="{if condition="$lc eq $content_lang_default"}manga_sub{else/}cl_{$lc}_manga_sub{/if}"
+                                            name="{if condition="$lc eq $content_lang_default"}manga_sub{else/}content_lang[{$lc}][manga_sub]{/if}"
+                                            value="{if condition="$lc eq $content_lang_default"}{$info.manga_sub}{else/}{$content_lang_data[$lc]['manga_sub']|default=''}{/if}">
+                                        {if condition="$lc neq $content_lang_default and $content_translate_available"}
+                                        <button type="button" class="layui-btn layui-btn-xs cl-translate-btn" data-lang="{$lc}" data-field="manga_sub" data-src="[name=&quot;manga_sub&quot;]">{:lang('admin/vod/content_lang_translate_btn')}</button>
+                                        {/if}
+                                    </div>
+                                </div>
+                                {if condition="$lc eq $content_lang_default"}
+                                <div class="layui-form-item">
+                                    <label class="layui-form-label">{:lang('en')}：</label>
+                                    <div class="layui-input-inline w500">
+                                        <input type="text" class="layui-input" id="manga_en" name="manga_en" value="{$info.manga_en}">
+                                    </div>
+                                    <label class="layui-form-label">{:lang('letter')}：</label>
+                                    <div class="layui-input-inline w70">
+                                        <input type="text" class="layui-input" id="manga_letter" name="manga_letter" value="{$info.manga_letter}">
+                                    </div>
+                                </div>
+                                {/if}
+                                <div class="layui-form-item">
+                                    <label class="layui-form-label">TAG：</label>
+                                    <div class="layui-input-block">
+                                        <input type="text" class="layui-input"
+                                            id="{if condition="$lc eq $content_lang_default"}manga_tag{else/}cl_{$lc}_manga_tag{/if}"
+                                            name="{if condition="$lc eq $content_lang_default"}manga_tag{else/}content_lang[{$lc}][manga_tag]{/if}"
+                                            value="{if condition="$lc eq $content_lang_default"}{$info.manga_tag}{else/}{$content_lang_data[$lc]['manga_tag']|default=''}{/if}">
+                                        {if condition="$lc eq $content_lang_default"}
+                                        <div class="layui-input-inline w120" style="margin-left:10px;">
+                                            <input type="checkbox" name="uptag" title="{:lang('auto_make')}" value="1" class="layui-checkbox checkbox-ids" lay-skin="primary">
+                                        </div>
+                                        {/if}
+                                        {if condition="$lc neq $content_lang_default and $content_translate_available"}
+                                        <button type="button" class="layui-btn layui-btn-xs cl-translate-btn" data-lang="{$lc}" data-field="manga_tag" data-src="[name=&quot;manga_tag&quot;]">{:lang('admin/vod/content_lang_translate_btn')}</button>
+                                        {/if}
+                                    </div>
+                                </div>
+                                <div class="layui-form-item">
+                                    <label class="layui-form-label">{:lang('remarks')}：</label>
+                                    <div class="layui-input-block">
+                                        <input type="text" class="layui-input" placeholder="{if condition="$lc eq $content_lang_default"}例如：更新至20话{/if}"
+                                            id="{if condition="$lc eq $content_lang_default"}manga_remarks{else/}cl_{$lc}_manga_remarks{/if}"
+                                            name="{if condition="$lc eq $content_lang_default"}manga_remarks{else/}content_lang[{$lc}][manga_remarks]{/if}"
+                                            value="{if condition="$lc eq $content_lang_default"}{$info.manga_remarks}{else/}{$content_lang_data[$lc]['manga_remarks']|default=''}{/if}">
+                                        {if condition="$lc neq $content_lang_default and $content_translate_available"}
+                                        <button type="button" class="layui-btn layui-btn-xs cl-translate-btn" data-lang="{$lc}" data-field="manga_remarks" data-src="[name=&quot;manga_remarks&quot;]">{:lang('admin/vod/content_lang_translate_btn')}</button>
+                                        {/if}
+                                    </div>
+                                </div>
+                                <div class="layui-form-item">
+                                    <label class="layui-form-label">{:lang('class')}：</label>
+                                    <div class="layui-input-inline w500">
+                                        <input type="text" class="layui-input"
+                                            id="{if condition="$lc eq $content_lang_default"}manga_class{else/}cl_{$lc}_manga_class{/if}"
+                                            name="{if condition="$lc eq $content_lang_default"}manga_class{else/}content_lang[{$lc}][manga_class]{/if}"
+                                            value="{if condition="$lc eq $content_lang_default"}{$info.manga_class}{else/}{$content_lang_data[$lc]['manga_class']|default=''}{/if}">
+                                        {if condition="$lc neq $content_lang_default and $content_translate_available"}
+                                        <button type="button" class="layui-btn layui-btn-xs cl-translate-btn" data-lang="{$lc}" data-field="manga_class" data-src="[name=&quot;manga_class&quot;]">{:lang('admin/vod/content_lang_translate_btn')}</button>
+                                        {/if}
+                                    </div>
+                                    {if condition="$lc eq $content_lang_default"}
+                                    <div class="layui-input-inline w500 manga_class_label">
+                                    </div>
+                                    {/if}
+                                </div>
+                                <div class="layui-form-item">
+                                    <label class="layui-form-label">{:lang('blurb')}：</label>
+                                    <div class="layui-input-block">
+                                        <textarea class="layui-textarea" style="height:40px;" placeholder="{:lang('blurb_auto_tip')}"
+                                            id="{if condition="$lc eq $content_lang_default"}manga_blurb{else/}cl_{$lc}_manga_blurb{/if}"
+                                            name="{if condition="$lc eq $content_lang_default"}manga_blurb{else/}content_lang[{$lc}][manga_blurb]{/if}">{if condition="$lc eq $content_lang_default"}{$info.manga_blurb}{else/}{$content_lang_data[$lc]['manga_blurb']|default=''}{/if}</textarea>
+                                        {if condition="$lc neq $content_lang_default and $content_translate_available"}
+                                        <button type="button" class="layui-btn layui-btn-xs cl-translate-btn" data-lang="{$lc}" data-field="manga_blurb" data-src="[name=&quot;manga_blurb&quot;]">{:lang('admin/vod/content_lang_translate_btn')}</button>
+                                        {/if}
+                                    </div>
+                                </div>
+                                <div class="layui-form-item">
+                                    <label class="layui-form-label">漫画简介：</label>
+                                    <div class="layui-input-block">
+                                        <textarea style="width:100%;height:{if condition="$lc eq $content_lang_default"}250{else/}200{/if}px" type="{if condition="$lc eq $content_lang_default"}text/plain{/if}"
+                                            id="{if condition="$lc eq $content_lang_default"}manga_content{else/}cl_{$lc}_manga_content{/if}"
+                                            name="{if condition="$lc eq $content_lang_default"}manga_content{else/}content_lang[{$lc}][manga_content]{/if}">{if condition="$lc eq $content_lang_default"}{$info.manga_content|mac_url_content_img}{else/}{$content_lang_data[$lc]['manga_content']|default=''}{/if}</textarea>
+                                        {if condition="$lc neq $content_lang_default and $content_translate_available"}
+                                        <button type="button" class="layui-btn layui-btn-xs cl-translate-btn" data-lang="{$lc}" data-field="manga_content" data-src="#manga_content">{:lang('admin/vod/content_lang_translate_btn')}</button>
+                                        {/if}
+                                    </div>
+                                </div>
+                            </div>
+                            {/volist}
+                        </div>
+                    </div>
+                    {else /}
+                    <div class="layui-form-item">
+                        <label class="layui-form-label">{:lang('name')}：</label>
+                        <div class="layui-input-inline w500">
+                            <input type="text" class="layui-input" lay-verify="manga_name" value="{$info.manga_name}" placeholder="" name="manga_name">
+                        </div>
+                        <label class="layui-form-label">{:lang('sub')}：</label>
+                        <div class="layui-input-inline ">
+                            <input type="text" class="layui-input" value="{$info.manga_sub}" placeholder="" name="manga_sub">
+                        </div>
+                    </div>
+                    <div class="layui-form-item">
+                        <label class="layui-form-label">{:lang('en')}：</label>
+                        <div class="layui-input-inline w500">
+                            <input type="text" class="layui-input" value="{$info.manga_en}" placeholder="" name="manga_en">
+                        </div>
+                        <label class="layui-form-label">{:lang('letter')}：</label>
+                        <div class="layui-input-inline w70">
+                            <input type="text" class="layui-input" value="{$info.manga_letter}" placeholder="" name="manga_letter">
+                        </div>
+                    </div>
+                    <div class="layui-form-item">
+                        <label class="layui-form-label">TAG：</label>
+                        <div class="layui-input-inline w500">
+                            <input type="text" class="layui-input" value="{$info.manga_tag}" placeholder="" name="manga_tag">
+                        </div>
+                        <div class="layui-input-inline w120">
+                            <input type="checkbox" name="uptag" title="{:lang('auto_make')}" value="1" class="layui-checkbox checkbox-ids" lay-skin="primary">
+                        </div>
+                    </div>
+                    <div class="layui-form-item">
+                        <label class="layui-form-label">{:lang('remarks')}：</label>
+                        <div class="layui-input-inline w500">
+                            <input type="text" class="layui-input" value="{$info.manga_remarks}" placeholder="例如：更新至20话" name="manga_remarks">
+                        </div>
+                    </div>
+                    <div class="layui-form-item">
+                        <label class="layui-form-label">{:lang('class')}：</label>
+                        <div class="layui-input-inline w500">
+                            <input type="text" class="layui-input" value="{$info.manga_class}" placeholder="" id="manga_class" name="manga_class">
+                        </div>
+                        <div class="layui-input-inline w500 manga_class_label">
+                        </div>
+                    </div>
                     <div class="layui-form-item">
                         <label class="layui-form-label">{:lang('blurb')}：</label>
                         <div class="layui-input-block">
@@ -174,6 +306,7 @@
                             <textarea class="layui-textarea" id="manga_content" name="manga_content" type="text/plain" style="width:100%;height:250px">{$info.manga_content|mac_url_content_img}</textarea>
                         </div>
                     </div>
+                    {/if}
 
                 </div>
 
@@ -438,6 +571,53 @@
         getExtend('{$info.type_id}')
     },1000);
     {/if}
+
+    // 内容级多语言：其它语言 tab 的“漫画简介”字段也用富文本编辑器，和默认语言保持一致的输入体验
+    var clContentEditors = {};
+    {volist name="content_lang_enabled" id="lc"}
+    {if condition="$lc neq $content_lang_default"}
+    clContentEditors['{$lc}'] = editor_getEditor('cl_{$lc}_manga_content');
+    {/if}
+    {/volist}
+
+    // 内容级多语言：单字段自动翻译（保存随主表单一起提交，不单独 ajax 保存）
+    $('.cl-translate-btn').on('click', function () {
+        var $btn = $(this);
+        var lang = $btn.data('lang');
+        var field = $btn.data('field');
+        var srcSel = $btn.data('src');
+        var srcText;
+        if (field === 'manga_content' && typeof editor !== 'undefined') {
+            srcText = editor_getContent(editor);
+        } else {
+            srcText = $(srcSel).val();
+        }
+        if (!srcText) {
+            layer.msg("{:lang('name_empty')}");
+            return;
+        }
+        $btn.prop('disabled', true);
+        $.post("{:url('manga/contentLangTranslate')}", {
+            text: srcText,
+            from: "{$content_lang_default|default='zh-cn'}",
+            to: lang,
+            __token__: "{:mac_admin_csrf_token()}"
+        }, function (r) {
+            $btn.prop('disabled', false);
+            if (r && r.code == 1) {
+                if (field === 'manga_content' && clContentEditors[lang]) {
+                    editor_setContent(clContentEditors[lang], r.data);
+                } else {
+                    $('#cl_' + lang + '_' + field).val(r.data);
+                }
+            } else {
+                layer.msg((r && r.msg) ? r.msg : "{:lang('admin/vod/content_lang_translate_err')}");
+            }
+        }, 'json').fail(function () {
+            $btn.prop('disabled', false);
+            layer.msg("{:lang('admin/vod/content_lang_translate_err')}");
+        });
+    });
 </script>
 
 </body>

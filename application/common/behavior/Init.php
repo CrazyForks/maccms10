@@ -19,6 +19,12 @@ class Init
         if (!array_key_exists('security_headers_base', $config['app'])) {
             $config['app']['security_headers_base'] = '1';
         }
+        if (!array_key_exists('content_lang_list', $config['app'])) {
+            $config['app']['content_lang_list'] = '';
+        }
+        if (empty($config['app']['content_lang_default'])) {
+            $config['app']['content_lang_default'] = 'zh-cn';
+        }
         if (!isset($config['meilisearch']) || !is_array($config['meilisearch'])) {
             $config['meilisearch'] = [
                 'enabled' => '0',

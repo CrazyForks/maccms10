@@ -490,6 +490,7 @@ class Website extends Base {
                 Cache::set($key, $info);
             }
         }
+        $info = mac_content_lang_overlay('website', $info);
         return ['code'=>1,'msg'=>lang('obtain_ok'),'info'=>$info];
     }
 
@@ -570,7 +571,7 @@ class Website extends Base {
         $ixWebsiteId = !empty($data['website_id']) ? intval($data['website_id']) : intval($this->getLastInsID());
         MeilisearchSync::afterWebsiteSave($ixWebsiteId);
 
-        return ['code'=>1,'msg'=>lang('save_ok')];
+        return ['code'=>1,'msg'=>lang('save_ok'),'website_id'=>$ixWebsiteId];
     }
 
     public function delData($where)
@@ -580,7 +581,9 @@ class Website extends Base {
             return ['code'=>1001,'msg'=>lang('del_err').'：'.$this->getError() ];
         }
         $path = './';
+        $delIds = [];
         foreach($list['list'] as $k=>$v){
+            $delIds[] = intval($v['website_id']);
             MeilisearchSync::deleteWebsite(intval($v['website_id']));
             mac_safe_unlink_upload($v['website_pic']);
             if($GLOBALS['config']['view']['website_detail'] ==2 ){
@@ -595,6 +598,7 @@ class Website extends Base {
         if($res===false){
             return ['code'=>1001,'msg'=>lang('del_err').'：'.$this->getError() ];
         }
+        \app\common\model\ContentLang::deleteByContent('website', $delIds);
         return ['code'=>1,'msg'=>lang('del_ok')];
     }
 

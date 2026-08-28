@@ -35,7 +35,7 @@ class All extends Controller
         }
 
         if(defined('ENTRANCE') && ENTRANCE == 'index' && $GLOBALS['config']['app']['cache_page'] ==1  && $GLOBALS['config']['app']['cache_time_page'] ) {
-            $cach_name = $_SERVER['HTTP_HOST']. '_'. MAC_MOB . '_'. $GLOBALS['config']['app']['cache_flag']. '_' .$tpl .'_'. http_build_query(mac_param_url());
+            $cach_name = $_SERVER['HTTP_HOST']. '_'. MAC_MOB . '_'. $GLOBALS['config']['app']['cache_flag']. '_' . \app\common\model\ContentLang::getCurrent() . '_' .$tpl .'_'. http_build_query(mac_param_url());
             $res = Cache::get($cach_name);
             if ($res) {
                 // 修复后台开启页面缓存时，模板json请求解析问题
@@ -66,7 +66,7 @@ class All extends Controller
         // 缓存命中的页面永远不上报 stay_ms（详见 analytics_inject 注释）。
         $html = $this->analytics_inject($html);
         if(defined('ENTRANCE') && ENTRANCE == 'index' && $GLOBALS['config']['app']['cache_page'] ==1  && $GLOBALS['config']['app']['cache_time_page'] ){
-            $cach_name = $_SERVER['HTTP_HOST']. '_'. MAC_MOB . '_'. $GLOBALS['config']['app']['cache_flag']. '_' . $tpl .'_'. http_build_query(mac_param_url());
+            $cach_name = $_SERVER['HTTP_HOST']. '_'. MAC_MOB . '_'. $GLOBALS['config']['app']['cache_flag']. '_' . \app\common\model\ContentLang::getCurrent() . '_' . $tpl .'_'. http_build_query(mac_param_url());
             $res = Cache::set($cach_name,$html,$GLOBALS['config']['app']['cache_time_page']);
         }
         if (strtolower(request()->controller()) != 'rss' && (!isset($GLOBALS['config']['site']['site_polyfill']) || $GLOBALS['config']['site']['site_polyfill'] == 1)){

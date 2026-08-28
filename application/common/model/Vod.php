@@ -699,6 +699,22 @@ class Vod extends Base {
                 Cache::set($key, $info);
             }
         }
+        $info = mac_content_lang_overlay('vod', $info);
+        // 线路/播放器/下载器配置的译文按当前语言覆盖。必须放在核心缓存读取「之后」，
+        // 否则先建缓存的语言会把线路译文烘进不区分语言的 vod_detail 缓存里串给其它语言。
+        foreach (['vod_play_list', 'vod_down_list'] as $vlk) {
+            if (empty($info[$vlk]) || !is_array($info[$vlk])) {
+                continue;
+            }
+            foreach ($info[$vlk] as $vgk => $vgroup) {
+                if (!empty($vgroup['player_info']) && is_array($vgroup['player_info'])) {
+                    $info[$vlk][$vgk]['player_info'] = mac_config_lang_overlay($vgroup['player_info'], ['show', 'des', 'tip']);
+                }
+                if (!empty($vgroup['server_info']) && is_array($vgroup['server_info'])) {
+                    $info[$vlk][$vgk]['server_info'] = mac_config_lang_overlay($vgroup['server_info'], ['show', 'tip']);
+                }
+            }
+        }
         return ['code'=>1,'msg'=>lang('obtain_ok'),'info'=>$info];
     }
 
@@ -832,7 +848,7 @@ class Vod extends Base {
         }
         MeilisearchSync::afterVodSave($ixVodId);
 
-        return ['code'=>1,'msg'=>lang('save_ok')];
+        return ['code'=>1,'msg'=>lang('save_ok'),'vod_id'=>$ixVodId];
     }
 
     public function savePlot($data)
@@ -887,7 +903,9 @@ class Vod extends Base {
         }
         $where = $this->mergeRecycleWhere($where);
         $path = './';
+        $delIds = [];
         foreach($list['list'] as $k=>$v){
+            $delIds[] = intval($v['vod_id']);
             MeilisearchSync::deleteVod(intval($v['vod_id']));
             mac_safe_unlink_upload($v['vod_pic']);
             mac_safe_unlink_upload($v['vod_pic_thumb']);
@@ -904,6 +922,7 @@ class Vod extends Base {
         if($res===false){
             return ['code'=>1002,'msg'=>lang('del_err').'：'.$this->getError() ];
         }
+        \app\common\model\ContentLang::deleteByContent('vod', $delIds);
         return ['code'=>1,'msg'=>lang('del_ok')];
     }
 

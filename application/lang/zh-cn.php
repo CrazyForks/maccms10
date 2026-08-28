@@ -1260,6 +1260,10 @@ https://www.baidu.com/123.jpg
     'admin/system/config/search_vod_rule'=>'视频搜索规则',
     'admin/system/config/search_rule_tip'=>'注意，仅影响wd参数，勾选过多影响性能，建议3个以内',
     'admin/system/config/search_art_rule'=>'文章搜索规则',
+    'admin/system/config/content_lang_list'=>'前台内容语言',
+    'admin/system/config/content_lang_list_tip'=>'勾选后前台会为这些语言启用内容翻译入口；不勾选任何语言则该功能不生效',
+    'admin/system/config/content_lang_default'=>'默认内容语言',
+    'admin/system/config/content_lang_default_tip'=>'网站原始内容所使用的语言代码（如 zh-cn），未匹配到译文时会回退显示这个语言的原文',
     'admin/system/config/vod_search_optimise'=>'视频搜索优化',
     'admin/system/config/vod_search_optimise/frontend'=>'前台',
     'admin/system/config/vod_search_optimise/collect'=>'采集',
@@ -1989,6 +1993,7 @@ https://www.baidu.com/123.jpg
 
 
     'admin/actor/title'=>'演员管理',
+    'admin/actor/content_lang_tip'=>'以下字段（名称、别名、地区、籍贯、星座、毕业院校、备注、代表作、TAG、扩展分类、简介、详情）为可翻译字段；若系统设置中启用了 2 个及以上前台语言，会按语言分标签页显示',
     'admin/addon/title'=>'插件管理',
     'admin/addon/get_dir_err'=>'获取插件目录失败',
     'admin/addon/get_addon_info_err'=>'获取插件信息失败',
@@ -2082,6 +2087,7 @@ https://www.baidu.com/123.jpg
 
 
     'admin/art/title'=>'文章管理',
+    'admin/art/content_lang_tip'=>'以下字段（名称、副标题、TAG、备注、扩展分类、简介）为可翻译字段；若系统设置中启用了 2 个及以上前台语言，会按语言分标签页显示',
     'admin/card/title'=>'充值卡管理',
     'admin/card/make_num'=>'生成数量',
     'admin/card/please_input_make_num'=>'请输入生成数量',
@@ -2093,8 +2099,11 @@ https://www.baidu.com/123.jpg
     'admin/cash/title'=>'提现管理',
     'admin/vodserver/title'=>'服务器组管理',
     'admin/vodserver/url'=>'服务器组地址',
+    'admin/vodserver/content_lang_tip'=>'以下字段（名称、提示）为可翻译字段；若系统设置中启用了 2 个及以上前台语言，会按语言分标签页显示',
     'admin/vodplayer/title'=>'播放器管理',
+    'admin/vodplayer/content_lang_tip'=>'以下字段（名称、备注、提示）为可翻译字段；若系统设置中启用了 2 个及以上前台语言，会按语言分标签页显示',
     'admin/voddowner/title'=>'下载器管理',
+    'admin/voddowner/content_lang_tip'=>'以下字段（名称、备注、提示）为可翻译字段；若系统设置中启用了 2 个及以上前台语言，会按语言分标签页显示',
     'admin/vodplayer/alone_api_url'=>'独立接口地址',
     'admin/vodplayer/alone_api_url'=>'独立接口地址',
     'admin/vodplayer/code_tip'=>'唯一标识英文、纯数字会自动加_，禁止出现./\\等符号',
@@ -2149,6 +2158,7 @@ https://www.baidu.com/123.jpg
 
 
     'admin/website/title'=>'网址管理',
+    'admin/website/content_lang_tip'=>'以下字段（名称、副标题、地区、语言、TAG、扩展分类、备注、简介、详情）为可翻译字段；若系统设置中启用了 2 个及以上前台语言，会按语言分标签页显示',
     'admin/website/referer'=>'总来路',
     'admin/website/referer_month'=>'月来路',
     'admin/website/referer_week'=>'周来路',
@@ -2158,6 +2168,11 @@ https://www.baidu.com/123.jpg
 
 
     'admin/vod/title'=>'视频管理',
+    'admin/vod/content_lang_tip'=>'以下字段（名称、副标题、TAG、备注、扩展分类、地区、语言、版本、资源类别、简介、详情）为可翻译字段；若系统设置中启用了 2 个及以上前台语言，会按语言分标签页显示',
+    'admin/vod/content_lang_translate_err'=>'没有已安装的翻译插件，或翻译调用失败',
+    'admin/vod/content_lang_translated'=>'已翻译',
+    'admin/vod/content_lang_untranslated'=>'未翻译',
+    'admin/vod/content_lang_translate_btn'=>'自动翻译',
     'admin/vod_audit/rule_title'=>'视频审核规则',
     'admin/vod_audit/rule_name'=>'规则名称',
     'admin/vod_audit/rule_type'=>'规则类型',
@@ -2608,6 +2623,7 @@ https://www.baidu.com/123.jpg
     'admin/link/pic_link'=>'图片链接',
 
     'admin/live/title'=>'直播频道管理',
+    'admin/live/content_lang_tip'=>'以下字段（频道名称、副标题、简介、详情）为可翻译字段；若系统设置中启用了 2 个及以上前台语言，会按语言分标签页显示',
     'admin/live/cate_title'=>'直播分类管理',
     'admin/live/cate'=>'分类',
     'admin/live/no_cate'=>'未分类',
@@ -2735,6 +2751,7 @@ https://www.baidu.com/123.jpg
 
     'admin/role/title'=>'角色管理',
     'admin/topic/title'=>'专题管理',
+    'admin/topic/content_lang_tip'=>'以下字段（名称、副标题、备注、类型、TAG、SEO标题/关键字/描述、简介、详情）为可翻译字段；若系统设置中启用了 2 个及以上前台语言，会按语言分标签页显示',
     'admin/topic/vod_include'=>'视频收录',
     'admin/topic/art_include'=>'文章收录',
     'admin/topic/tpl_empty'=>'请输入专题模板',
@@ -2749,6 +2766,7 @@ https://www.baidu.com/123.jpg
     'admin/type/down_tpl'=>'下载页模板',
     'admin/type/tip'=>'提示信息：<br>
             1,新增加分类后，请到用户-会员组分别对每个组设置权限，否则会提示无权限访问',
+    'admin/type/content_lang_tip'=>'以下字段（名称、SEO标题/关键字/描述、扩展分类）为可翻译字段；若系统设置中启用了 2 个及以上前台语言，会按语言分标签页显示',
     'admin/type/parent_type'=>'父级分类',
     'admin/type/top_type'=>'顶级分类',
     'admin/type/logo'=>'分类图标',
@@ -3056,6 +3074,7 @@ https://www.baidu.com/123.jpg
     'validate/require_time'=>'时间必须',
     'manga' => '漫画',
     'admin/manga/title' => '漫画管理',
+    'admin/manga/content_lang_tip' => '以下字段（名称、副标题、TAG、备注、扩展分类、简介、漫画简介）为可翻译字段；若系统设置中启用了 2 个及以上前台语言，会按语言分标签页显示',
     'admin/manga/new_version_notice' => '漫画模块已有新版本可用，请切换到新版后台体验完整功能。',
     'admin/system/configapi/manga'=>'漫画API设置',
     'admin/system/configapi/manga_tip'=>'提示信息：<br>1,漫画列表地址/api.php/provide/manga/?ac=list<br>2,漫画详情地址/api.php/provide/manga/?ac=detail',

@@ -202,14 +202,21 @@ class Type extends Base {
         $by = 'type_'.$by;
         $order = 'type_pid asc,'. $by . ' ' . $order;
 
-        $cach_name = $GLOBALS['config']['app']['cache_flag']. '_' .md5('type_listcache_'.http_build_query($where).'_'.$order.'_'.$num.'_'.$start);
+        // 内容级多语言：{maccms:type} 导航标签走这里而非 getCache()，缓存 key 要带上当前内容语言，
+        // 否则先渲染的语言会把译文/原文串给其它语言
+        $lang = \app\common\model\ContentLang::getCurrent();
+        $cach_name = $GLOBALS['config']['app']['cache_flag']. '_' .md5('type_listcache_'.$lang.'_'.http_build_query($where).'_'.$order.'_'.$num.'_'.$start);
         $res = Cache::get($cach_name);
         if(empty($cachetime)){
             $cachetime = $GLOBALS['config']['app']['cache_time'];
         }
         if($GLOBALS['config']['app']['cache_core']==0 || empty($res)) {
-            $res = $this->listData($where,$order,$format,$mid,$num,$start,0);
-            $res['list'] = array_values($res['list']);
+            // 展示字段的译文覆盖要在 tree 组装之前，按 type_id 平铺替换后再转树
+            $res = $this->listData($where,$order,'def',$mid,$num,$start,0);
+            $res['list'] = $this->langOverlayTypeList(array_values($res['list']), $lang);
+            if($format=='tree'){
+                $res['list'] = mac_list_to_tree($res['list'],'type_id','type_pid');
+            }
             if($GLOBALS['config']['app']['cache_core']==1) {
                 Cache::set($cach_name, $res, $cachetime);
             }
@@ -229,9 +236,11 @@ class Type extends Base {
             return ['code'=>1002,'msg'=>lang('obtain_err')];
         }
         $info = $info->toArray();
+        $info = mac_content_lang_overlay('type', $info);
 
         if(!empty($info['type_extend'])){
-            $info['type_extend'] = json_decode($info['type_extend'],true);
+            //overlay 回填的 type_extend 可能已是数组（译文按数组存进 content_lang.data）
+            $info['type_extend'] = is_array($info['type_extend']) ? $info['type_extend'] : json_decode($info['type_extend'],true);
         }
         else{
             $info['type_extend'] = json_decode('{"type":"","area":"","lang":"","year":"","star":"","director":"","state":"","version":""}',true);
@@ -286,19 +295,24 @@ class Type extends Base {
         }
         else{
             $res = $this->allowField(true)->insert($data);
+            if(false !== $res){
+                $data['type_id'] = $this->getLastInsID();
+            }
         }
         if(false === $res){
             return ['code'=>1002,'msg'=>lang('save_err').'：'.$this->getError() ];
         }
 
         $this->setCache();
-        return ['code'=>1,'msg'=>lang('save_ok')];
+        return ['code'=>1,'msg'=>lang('save_ok'),'type_id'=>$data['type_id']];
     }
 
     public function delData($where)
     {
         $list = $this->where($where)->select();
+        $delIds = [];
         foreach($list as $k=>$v){
+            $delIds[] = intval($v['type_id']);
             $where2=[];
             $where2['type_id|type_id_1'] = ['eq',$v['type_id']];
             $flag = $v['type_mid'] == 1 ? 'Vod' : 'Art';
@@ -312,6 +326,7 @@ class Type extends Base {
         if($res===false){
             return ['code'=>1001,'msg'=>lang('del_err').'：'.$this->getError() ];
         }
+        \app\common\model\ContentLang::deleteByContent('type', $delIds);
 
         $this->setCache();
         return ['code'=>1,'msg'=>lang('del_ok')];
@@ -362,17 +377,89 @@ class Type extends Base {
     {
         $res = $this->listData([],'type_id asc');
         $list = $res['list'];
-        $key = $GLOBALS['config']['app']['cache_flag']. '_'.'type_list';
-        Cache::set($key,$list);
+        $flag = $GLOBALS['config']['app']['cache_flag'];
+        Cache::set($flag.'_type_list',$list);
+        Cache::set($flag.'_type_tree', mac_list_to_tree($list,'type_id','type_pid'));
 
-        $type_tree = mac_list_to_tree($list,'type_id','type_pid');
-        $key = $GLOBALS['config']['app']['cache_flag']. '_'.'type_tree';
-        Cache::set($key,$type_tree);
+        // 内容级多语言：前台分类走 getCacheInfo()→getCache('type_list'/'type_tree') 这份缓存，
+        // 不经过 infoData()，所以在这里为每个已启用的非默认语言各存一份 overlay 过的变体。
+        // overlay 只在建缓存时批量跑一次（getFieldsMap 一条 SQL），无逐请求/逐行查询。
+        $default = mac_content_lang_default();
+        $langs = mac_content_lang_allow_list();
+        foreach ($langs as $lang) {
+            if ($lang === $default) {
+                continue;
+            }
+            $langList = $this->langOverlayTypeList($list, $lang);
+            Cache::set($flag.'_'.$lang.'_type_list', $langList);
+            Cache::set($flag.'_'.$lang.'_type_tree', mac_list_to_tree($langList,'type_id','type_pid'));
+        }
+    }
+
+    /**
+     * 把分类列表里的纯展示字段替换成指定内容语言的译文（内容级多语言）。
+     * 只覆盖 type_name/type_title/type_key/type_des/type_extend：type_en 是 URL slug、
+     * getCacheInfo() 与路由按它匹配，type_pid/childids 等结构字段也必须保持原值。
+     * $lang 为空时取当前请求语言；非默认且已启用才生效，否则原样返回。
+     */
+    protected function langOverlayTypeList(array $list, $lang = null)
+    {
+        $lang = $lang ?: \app\common\model\ContentLang::getCurrent();
+        if ($lang === mac_content_lang_default() || !in_array($lang, mac_content_lang_allow_list(), true)) {
+            return $list;
+        }
+        $map = model('ContentLang')->getFieldsMap('type', $lang);
+        if (empty($map)) {
+            return $list;
+        }
+        $fields = ['type_name', 'type_title', 'type_key', 'type_des', 'type_extend'];
+        $apply = function ($row) use ($map, $fields) {
+            $tid = isset($row['type_id']) ? $row['type_id'] : 0;
+            if (empty($map[$tid])) {
+                return $row;
+            }
+            foreach ($fields as $f) {
+                $tr = isset($map[$tid][$f]) ? $map[$tid][$f] : null;
+                if ($tr === null || $tr === '') {
+                    continue;
+                }
+                $row[$f] = ($f === 'type_extend' && !is_array($tr)) ? json_decode($tr, true) : $tr;
+            }
+            return $row;
+        };
+        foreach ($list as $k => $row) {
+            $row = $apply($row);
+            // 子分类里冗余的父级副本（模板常用 $vo.type_1.type_name）也同步覆盖
+            if (!empty($row['type_1']) && is_array($row['type_1'])) {
+                $row['type_1'] = $apply($row['type_1']);
+            }
+            $list[$k] = $row;
+        }
+        return $list;
     }
 
     public function getCache($flag='type_list')
     {
-        $key = $GLOBALS['config']['app']['cache_flag']. '_'.$flag;
+        $prefix = $GLOBALS['config']['app']['cache_flag'];
+
+        // 前台切到非默认内容语言时优先取 overlay 变体（后台/采集 getCurrent()==default，自然取原缓存）
+        // 仅对 setCache() 真正构建了变体的 flag 生效，避免其它 flag 白跑一遍 setCache()
+        $lang = \app\common\model\ContentLang::getCurrent();
+        if (in_array($flag, ['type_list', 'type_tree'], true)
+            && $lang !== mac_content_lang_default()
+            && in_array($lang, mac_content_lang_allow_list(), true)) {
+            $langKey = $prefix.'_'.$lang.'_'.$flag;
+            $cache = Cache::get($langKey);
+            if (empty($cache)) {
+                $this->setCache();
+                $cache = Cache::get($langKey);
+            }
+            if (!empty($cache)) {
+                return $cache;
+            }
+        }
+
+        $key = $prefix.'_'.$flag;
         $cache = Cache::get($key);
         if(empty($cache)){
             $this->setCache();

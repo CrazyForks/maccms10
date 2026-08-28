@@ -99,6 +99,15 @@ class Base extends All
             }
         }
 
+        // 内容级多语言“自动翻译”ajax 助手：授权了对应模块 info 编辑权的子管理员即可调用，
+        // 无需为 14 个控制器各自单列一条权限点（与 safety/fix、database/uploadstorage 同思路）。
+        if ($a === 'contentlangtranslate') {
+            $authStr = ',' . strtolower((string)$this->_admin['admin_auth']) . ',';
+            if (strpos($authStr, ',' . $c . '/info,') !== false) {
+                return true;
+            }
+        }
+
         $auths = $this->_admin['admin_auth'] . ',index/index,index/welcome,index/logout,';
         $cur = ','.$c.'/'.$a.',';
         if($this->_admin['admin_id'] =='1'){

@@ -11,12 +11,26 @@ class Base extends All
     public function __construct()
     {
         parent::__construct();
-        
+
         $this->check_ip_limit();
         $this->check_site_status();
         $this->label_maccms();
         $this->check_browser_jump();
         $this->label_user();
+        $this->init_content_lang();
+    }
+
+    /**
+     * 解析本次请求的内容语言（GET lang -> cookie -> Accept-Language -> 默认语言），
+     * 存到 ContentLang::currentLang 供 Vod/Art 的 infoData() 读取，并派给模板方便渲染切换器。
+     */
+    protected function init_content_lang()
+    {
+        $lang = mac_get_content_lang();
+        \app\common\model\ContentLang::setCurrent($lang);
+        $this->assign('content_lang', $lang);
+        $this->assign('content_lang_default', mac_content_lang_default());
+        $this->assign('content_lang_list', mac_content_lang_allow_list());
     }
 
     protected function check_ip_limit()

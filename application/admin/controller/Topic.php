@@ -53,9 +53,22 @@ class Topic extends Base
     {
         if (Request()->isPost()) {
             $param = input('post.');
+            $contentLang = $param['content_lang'] ?? [];
+            unset($param['content_lang']);
             $res = model('Topic')->saveData($param);
             if($res['code']>1){
                 return $this->error($res['msg']);
+            }
+            $topicId = (int)($res['topic_id'] ?? 0);
+            if ($topicId > 0 && is_array($contentLang)) {
+                //默认语言以原始行为准，只写非默认语言的译文（见 mac_content_lang_overlay 注释）
+                $defaultLang = mac_content_lang_default();
+                foreach ($contentLang as $langCode => $fields) {
+                    if ((string)$langCode === $defaultLang || !is_array($fields)) {
+                        continue;
+                    }
+                    model('ContentLang')->saveFields('topic', $topicId, (string)$langCode, $fields, 'manual', 1);
+                }
             }
             return $this->success($res['msg']);
         }
@@ -66,13 +79,47 @@ class Topic extends Base
         $where['topic_id'] = ['eq',$id];
         $res = model('Topic')->infoData($where);
 
-
+        //内容级多语言：默认语言永远排第一位（即便后台没勾选它），其后跟已启用的其它语言
+        $content_lang_default = mac_content_lang_default();
+        $content_lang_enabled = array_values(array_unique(array_merge([$content_lang_default], mac_content_lang_allow_list())));
+        $content_lang_data = [];
+        if (!empty($res['info']['topic_id'])) {
+            foreach ($content_lang_enabled as $langCode) {
+                $content_lang_data[$langCode] = model('ContentLang')->getFields('topic', $res['info']['topic_id'], $langCode);
+            }
+        }
         $this->assign('info',$res['info']);
+        $this->assign('content_lang_default', $content_lang_default);
+        $this->assign('content_lang_enabled', $content_lang_enabled);
+        $this->assign('content_lang_multi', count($content_lang_enabled) > 1);
+        $this->assign('content_lang_data', $content_lang_data);
+        $this->assign('content_translate_available', mac_content_translate_available());
 
         $config = config('maccms.site');
         $this->assign('install_dir',$config['install_dir']);
         $this->assign('title',lang('admin/topic/title'));
         return $this->fetch('admin@topic/info');
+    }
+
+    /**
+     * 调用已安装的翻译插件（若有）翻译单个字段；没有插件注册时返回空字符串，前端据此禁用按钮。
+     */
+    public function contentLangTranslate()
+    {
+        $text = (string)input('post.text', '');
+        $from = (string)input('post.from', mac_content_lang_default());
+        $to = (string)input('post.to', '');
+        if ($text === '' || $to === '') {
+            return $this->error(lang('param_err'));
+        }
+        if (!mac_content_translate_rate_limit($this->_admin['admin_id'])) {
+            return $this->error(lang('frequently'));
+        }
+        $result = mac_content_translate($text, $from, $to, ['content_type' => 'topic']);
+        if ($result === '') {
+            return $this->error(lang('admin/vod/content_lang_translate_err'));
+        }
+        return json(['code' => 1, 'msg' => 'ok', 'data' => $result]);
     }
 
     public function del()

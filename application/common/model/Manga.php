@@ -493,6 +493,7 @@ class Manga extends Base {
                 Cache::set($key, $info);
             }
         }
+        $info = mac_content_lang_overlay('manga', $info);
         return ['code'=>1,'msg'=>lang('obtain_ok'),'info'=>$info];
     }
 
@@ -607,7 +608,7 @@ class Manga extends Base {
         $ixMid = !empty($data['manga_id']) ? intval($data['manga_id']) : intval($this->getLastInsID());
         MeilisearchSync::afterMangaSave($ixMid);
 
-        return ['code'=>1,'msg'=>lang('save_ok')];
+        return ['code'=>1,'msg'=>lang('save_ok'),'manga_id'=>$ixMid];
     }
 
     public function delData($where)
@@ -625,7 +626,9 @@ class Manga extends Base {
         }
         $where = $this->mergeRecycleWhere($where);
         $path = './';
+        $delIds = [];
         foreach($list['list'] as $k=>$v){
+            $delIds[] = intval($v['manga_id']);
             MeilisearchSync::deleteManga(intval($v['manga_id']));
             mac_safe_unlink_upload($v['manga_pic']);
             mac_safe_unlink_upload($v['manga_pic_thumb']);
@@ -642,6 +645,7 @@ class Manga extends Base {
         if($res===false){
             return ['code'=>1001,'msg'=>lang('del_err').'：'.$this->getError() ];
         }
+        \app\common\model\ContentLang::deleteByContent('manga', $delIds);
 
         return ['code'=>1,'msg'=>lang('del_ok')];
     }
