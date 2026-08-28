@@ -132,6 +132,11 @@ class TaskRunner
             'local_materials' => Safety::parseMaterialList($get('local_materials', '')),
             'video_count' => max(1, min(3, $count)),
             'video_clip_duration' => max(2, min(10, $clip)),
+            // sequential 时 MPT 按 video_materials 的填写顺序拼接，且每个素材只取
+            // 开头 video_clip_duration 秒（app/services/video.py 里那句 break）。
+            // 分步骤讲解类的片子要靠它把画面和解说对齐；默认仍是 MPT 自己的 random。
+            'video_concat_mode' => in_array($get('video_concat_mode', 'random'), array('random', 'sequential'), true)
+                ? (string) $get('video_concat_mode', 'random') : 'random',
             // 留空就按站点语言取默认音色，不写死中文音色 —— 见 defaultVoice()
             'voice_name' => (string) $get('voice_name', self::defaultVoice()),
             'subtitle_enabled' => (string) $get('subtitle_enabled', '1') === '1',
@@ -395,6 +400,7 @@ class TaskRunner
         $payload['video_source'] = $cfg['video_source'];
         $payload['video_count'] = $cfg['video_count'];
         $payload['video_clip_duration'] = $cfg['video_clip_duration'];
+        $payload['video_concat_mode'] = $cfg['video_concat_mode'];
         $payload['voice_name'] = $cfg['voice_name'];
         $payload['subtitle_enabled'] = $cfg['subtitle_enabled'];
         $payload['bgm_type'] = $cfg['bgm_type'];

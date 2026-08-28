@@ -120,11 +120,18 @@ class MptClient
             $progress = 100;
         }
 
+        // ★ videos 在前，combined_videos 只做回退 ★
+        // MPT 侧这两个字段不是同一份产物（app/services/task.py 的
+        // generate_final_videos 返回 final_video_paths, combined_video_paths）：
+        // videos = final-N.mp4，字幕烧录、BGM 混音都在这一步之后才有；
+        // combined_videos = combined-N.mp4，只是素材拼接完的中间件。
+        // 取错的后果不是拿不到片子，而是站长把「烧录字幕」开着、成片里却没有字幕，
+        // 且完全没有报错——只能靠肉眼看出来。
         $videos = array();
-        if (!empty($d['combined_videos']) && is_array($d['combined_videos'])) {
-            $videos = $d['combined_videos'];
-        } elseif (!empty($d['videos']) && is_array($d['videos'])) {
+        if (!empty($d['videos']) && is_array($d['videos'])) {
             $videos = $d['videos'];
+        } elseif (!empty($d['combined_videos']) && is_array($d['combined_videos'])) {
+            $videos = $d['combined_videos'];
         }
 
         $path = '';

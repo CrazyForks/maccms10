@@ -19,6 +19,7 @@ $values = array(
     'local_materials'       => '',
     'video_count'           => '1',
     'video_clip_duration'   => '4',
+    'video_concat_mode'     => 'random',
     'voice_name'            => '',
     'subtitle_enabled'      => '1',
     'bgm_type'              => 'random',

@@ -208,6 +208,21 @@ class ConfigSchema
                 'extend'  => '',
             ),
             array(
+                'name'    => 'video_concat_mode',
+                'title'   => lang('mpt/cfg_video_concat_mode'),
+                'type'    => 'select',
+                'content' => array(
+                    'random'     => lang('mpt/cfg_video_concat_mode_random'),
+                    'sequential' => lang('mpt/cfg_video_concat_mode_sequential'),
+                ),
+                'value'   => 'random',
+                'rule'    => '',
+                'msg'     => '',
+                'tip'     => lang('mpt/cfg_video_concat_mode_tip'),
+                'ok'      => '',
+                'extend'  => '',
+            ),
+            array(
                 'name'    => 'voice_name',
                 'title'   => lang('mpt/cfg_voice'),
                 'type'    => 'string',
