@@ -682,7 +682,11 @@ class User extends Base
                     'rid'     => $data['ulog_rid'],
                 ]);
             }
-            return json(['code' => 1, 'msg' => lang('update_ok')]);
+            $ulog_id = !empty($existing['info']['ulog_id']) ? intval($existing['info']['ulog_id']) : 0;
+            // 与 index ajax_ulog 已存在路径对齐：保留完整 info，并补顶层 ulog_id
+            $existing['ulog_id'] = $ulog_id;
+            $existing['msg'] = lang('update_ok');
+            return json($existing);
         }
         if ($data['ulog_points'] > 0) {
             return json(['code' => 2001, 'msg' => lang('index/ulog_fee')]);

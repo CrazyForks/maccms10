@@ -512,13 +512,18 @@ class Ulog extends Base {
             return ['code'=>1002,'msg'=>lang('param_err')];
         }
 
+        // 前端收藏按钮依赖返回 ulog_id 回填 data-uid，否则未刷新页面直接「取消收藏」
+        // 只会改 UI、不会调用 ulog_del（见 template default MAC.Ulog.Click）。
+        $ulog_id = 0;
         if(!empty($data['ulog_id'])){
             $where=[];
             $where['ulog_id'] = ['eq',$data['ulog_id']];
             $res = $this->allowField(true)->where($where)->update($data);
+            $ulog_id = intval($data['ulog_id']);
         }
         else{
-            $res = $this->allowField(true)->insert($data);
+            $res = $this->allowField(true)->insertGetId($data);
+            $ulog_id = intval($res);
         }
         if(false === $res){
             return ['code'=>1004,'msg'=>lang('save_err').'：'.$this->getError() ];
@@ -543,7 +548,13 @@ class Ulog extends Base {
             }
         }
 
-        return ['code'=>1,'msg'=>lang('save_ok')];
+        return [
+            'code' => 1,
+            'msg' => lang('save_ok'),
+            'ulog_id' => $ulog_id,
+            // PB / mac-theme-runtime 读 info.ulog_id；default 模板读顶层 ulog_id
+            'info' => ['ulog_id' => $ulog_id],
+        ];
     }
 
     private function _getContentName($mid, $rid)

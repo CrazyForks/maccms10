@@ -1161,8 +1161,9 @@
                             }, function (r) {
                                 if (r.code == 1) {
                                     MAC.Pop.Msg(100, 20, lang == 1 ? 'Collection successful' : r.msg, 1000);
-                                    if (!$that.attr("data-uid")) {
-                                        $that.attr("data-uid", r.ulog_id)
+                                    var favUid = r.ulog_id || (r.info && r.info.ulog_id) || '';
+                                    if (favUid) {
+                                        $that.attr("data-uid", favUid)
                                     }
                                     $that.addClass("is_fav")
                                     $that.children().eq(0).html('\u2605')
@@ -1183,6 +1184,7 @@
                                     if (r.code == '1') {
                                         MAC.Pop.Msg(100, 20, lang == 1 ? 'Cancel collection' : '取消收藏', 1000);
                                         $that.removeClass("is_fav")
+                                        $that.attr("data-uid", "")
                                         $that.children().eq(0).html('\u2606')
                                         $that.children().eq(1).html(lang == 1 ? 'Collection' : '收藏')
                                     } else {
@@ -1195,7 +1197,9 @@
                                     }
                                 });
                             } else {
+                                // 无 data-uid 时无法调服务端删除，仅复位 UI（依赖后端 saveData 回传 ulog_id）
                                 $that.removeClass("is_fav")
+                                $that.attr("data-uid", "")
                                 $that.children().eq(0).html('\u2606')
                                 $that.children().eq(1).html(lang == 1 ? 'Collection' : '收藏')
                                 MAC.Pop.Msg(100, 20, lang == 1 ? 'Cancel collection' : '取消收藏', 1000);

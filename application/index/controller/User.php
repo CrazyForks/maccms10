@@ -100,6 +100,10 @@ class User extends Base
                         'rid'     => $data['ulog_rid'],
                     ]);
                 }
+                // 与 saveData 对齐：顶层 ulog_id 供前端回填 data-uid
+                if (!empty($res['info']['ulog_id'])) {
+                    $res['ulog_id'] = intval($res['info']['ulog_id']);
+                }
                 return json($res);
             }
             if ($data['ulog_points'] == 0) {
