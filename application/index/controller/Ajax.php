@@ -1011,12 +1011,12 @@ class Ajax extends Base
 
         // --- Auth gate: default require_login; anonymous captcha when allowed ---
         $requireLogin = (string)(isset($aiCfg['require_login']) ? $aiCfg['require_login'] : '1');
-        $userId = intval(session('user_id'));
+        $userId = intval(isset($GLOBALS['user']['user_id']) ? $GLOBALS['user']['user_id'] : 0);
         $isAnon = ($userId <= 0);
         if ($requireLogin === '1' && $isAnon) {
             return json([
                 'code' => 1003,
-                'msg' => lang('index/n'),
+                'msg' => lang('index/no_login'),
                 'data' => $service->emptyPayload()
             ]);
         }
