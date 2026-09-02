@@ -536,10 +536,31 @@ class User extends Base
             if ($GLOBALS['config']['user']['portrait_status'] == 0) {
                 return json(['code' => 0, 'msg' => lang('index/portrait_tip1')]);
             }
+            $uid = (int)$GLOBALS['user']['user_id'];
+            if ($uid < 1) {
+                return json(['code' => 1003, 'msg' => lang('index/require_login')]);
+            }
+            // 删除已上传头像，恢复默认
+            if (input('op') === 'remove') {
+                // 破坏性写操作（删服务器文件 + 清空 user_portrait）前必须做 CSRF 校验，
+                // 与本控制器 info/bind/unbind/gopay/upgrade/cash/ajax_buy_popedom 等写接口保持一致基线
+                $csrfErr = $this->checkCsrf();
+                if ($csrfErr !== null) {
+                    return json($csrfErr);
+                }
+                $file = 'upload/user/' . ($uid % 10) . '/' . $uid . '.jpg';
+                if (is_file(ROOT_PATH . $file)) {
+                    @unlink(ROOT_PATH . $file);
+                }
+                model('User')->where(['user_id' => $uid])->update(['user_portrait' => '']);
+                $def = mac_get_user_portrait($uid);
+                cookie('user_portrait', $def);
+                return json(['code' => 1, 'msg' => lang('del_ok'), 'file' => $def]);
+            }
             $param=[];
             $param['input'] = 'file';
             $param['flag'] = 'user';
-            $param['user_id'] = $GLOBALS['user']['user_id'];
+            $param['user_id'] = $uid;
             $res = model('Upload')->upload($param);
             return json($res);
         }
