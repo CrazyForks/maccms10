@@ -6,7 +6,7 @@
     <link rel="stylesheet" type="text/css" href="{$maccms.path_tpl}/asset/css/vod-play.css?v=202607102" />
     {if condition="($obj.vod_copyright neq 1 || $GLOBALS['config']['app']['copyright_status'] neq 1) && !$obj.vod_lock && $popedom.code elt 1 && ($obj['vod_play_list'][$param['sid']]['player_info']['from'] eq 'dplayer' || $obj['vod_play_list'][$param['sid']]['player_info']['from'] eq 'videojs')"}
     <link rel="stylesheet" type="text/css" href="{$maccms.path_tpl}/asset/css/vod-play-social.css?v=202604271" />
-    <link rel="stylesheet" type="text/css" href="{$maccms.path_tpl}/asset/css/vod-play-fullscreen.css?v=202607304" />
+    <link rel="stylesheet" type="text/css" href="{$maccms.path_tpl}/asset/css/vod-play-fullscreen.css?v=202609021" />
     <link rel="stylesheet" type="text/css" href="{$maccms.path_tpl}/asset/css/vod-play-progress.css?v=202606246" />
     {/if}
     {if condition="($obj.vod_copyright neq 1 || $GLOBALS['config']['app']['copyright_status'] neq 1) && !$obj.vod_lock && $popedom.code elt 1"}
@@ -466,7 +466,7 @@
         {if condition="($obj.vod_copyright neq 1 || $GLOBALS['config']['app']['copyright_status'] neq 1) && !$obj.vod_lock && $popedom.code elt 1 && ($obj['vod_play_list'][$param['sid']]['player_info']['from'] eq 'dplayer' || $obj['vod_play_list'][$param['sid']]['player_info']['from'] eq 'videojs')"}
         <script defer src="{$maccms.path_tpl}/asset/js/vod-play-social.js?v=202604261830"></script>
         <script defer src="{$maccms.path_tpl}/asset/js/vod-play-progress.js?v=202606246"></script>
-        <script defer src="{$maccms.path_tpl}/asset/js/vod-play-fullscreen.js?v=202607303"></script>
+        <script defer src="{$maccms.path_tpl}/asset/js/vod-play-fullscreen.js?v=202609021"></script>
         {/if}
         {if condition="($obj.vod_copyright neq 1 || $GLOBALS['config']['app']['copyright_status'] neq 1) && !$obj.vod_lock && $popedom.code elt 1"}
         <script defer src="{$maccms.path_tpl}/asset/js/vod-play-failover.js?v=202607183"></script>

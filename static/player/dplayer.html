@@ -613,6 +613,10 @@
 		}
 		if (d.type === 'progress_seek') {
 			seekToPoint(d.point);
+			return;
+		}
+		if (d.type === 'autofull') {
+			enterWebFullscreen();
 		}
 	});
 
@@ -620,6 +624,35 @@
 		try {
 			parent.postMessage({ source: 'mac-player', type: 'web_fullscreen', on: !!on }, location.origin);
 		} catch (eWf) {}
+	}
+
+	function parentWantsAutofull() {
+		try {
+			var c = parent.MacPlayerConfig;
+			if (!c) return false;
+			var v = c.autofull;
+			return v === 1 || v === '1' || v === true;
+		} catch (eAf) {
+			return false;
+		}
+	}
+
+	function enterWebFullscreen() {
+		var root = document.getElementById('playerCnt');
+		if (!root) return;
+		if (root.classList.contains('dplayer-fulled')) {
+			syncParentWebFullscreen(true);
+			return;
+		}
+		var btn = document.querySelector('.dplayer-full-in-icon');
+		if (btn && typeof btn.click === 'function') {
+			btn.click();
+			return;
+		}
+		// 无网页全屏按钮时（如移动端）直接加 class，并通知父页铺满
+		root.classList.add('dplayer-fulled');
+		document.body.classList.add('dplayer-web-fullscreen-fix');
+		syncParentWebFullscreen(true);
 	}
 
 	// iframe 内网页全屏只改 #playerCnt 的 class；dp.on('webfullscreen') 在部分环境不触发，改监听 class。
@@ -638,6 +671,10 @@
 	try {
 		parent.postMessage({ source: 'mac-player', type: 'ready', player: 'dplayer' }, location.origin);
 	} catch (e3) {}
+
+	if (parentWantsAutofull()) {
+		setTimeout(enterWebFullscreen, 50);
+	}
 })();
 </script>
 </body>

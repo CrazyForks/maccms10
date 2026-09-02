@@ -224,7 +224,11 @@ class System extends Base
             if(strpos($tj,'document.w') ===false){
                 $tj = 'document.write(\'' . str_replace("'","\'",$tj) . '\')';
             }
-            $res = @fwrite(fopen('./static/js/tj.js', 'wb'), $tj);
+            // file_put_contents 返回写入字节数；fwrite 写入 0 字节返回整数 0，用 === false 判断会漏判
+            $tjRes = @file_put_contents('./static/js/tj.js', $tj, LOCK_EX);
+            if ($tjRes === false || $tjRes !== strlen($tj)) {
+                return $this->ajaxErrorWithFreshToken(lang('save_err'));
+            }
 
             $res = mac_arr2file(APP_PATH . 'extra/maccms.php', $config_new);
             if ($res === false) {
@@ -1089,25 +1093,35 @@ class System extends Base
             }
             unset($config['__token__']);
 
-            $config_new['play'] = $config['play'];
-            $config_old = config('maccms');
-            $config_new = array_merge($config_old, $config_new);
-
-            $res = mac_arr2file(APP_PATH . 'extra/maccms.php', $config_new);
-            if ($res === false) {
-                return $this->ajaxErrorWithFreshToken(lang('save_err'));
+            if (!isset($config['play']) || !is_array($config['play']) || empty($config['play'])) {
+                return $this->ajaxErrorWithFreshToken(lang('param_err'));
             }
 
-            $path = './static/js/playerconfig.js';
-            if (!file_exists($path)) {
+            // 播放器参数的唯一数据源是 static/js/playerconfig.js（前台经 All.php 直接引用该文件），
+            // extra/maccms.php 的 play 节点从未被读取，故不再写入，避免两套配置并存。
+            $target = './static/js/playerconfig.js';
+            $path = $target;
+            if (!is_file($path)) {
                 $path .= '.bak';
             }
-            $fc = @file_get_contents($path);
+            $fc = is_file($path) ? @file_get_contents($path) : false;
+            if ($fc === false || $fc === '') {
+                return $this->ajaxErrorWithFreshToken(lang('save_err'));
+            }
             $jsb = mac_get_body($fc, '//参数开始', '//参数结束');
+            if ($jsb === false || trim((string)$jsb) === '') {
+                return $this->ajaxErrorWithFreshToken(lang('save_err'));
+            }
             $content = 'MacPlayerConfig=' . json_encode($config['play']) . ';';
-            $fc = str_replace($jsb, "\r\n" . $content . "\r\n", $fc);
-            $res = @fwrite(fopen('./static/js/playerconfig.js', 'wb'), $fc);
-            if ($res === false) {
+            $fc_new = str_replace($jsb, "\r\n" . $content . "\r\n", $fc);
+            // 替换后必须真的包含新参数，否则说明标记异常，不能当成成功
+            if (strpos($fc_new, $content) === false) {
+                return $this->ajaxErrorWithFreshToken(lang('save_err'));
+            }
+            // file_put_contents 返回实际写入字节数：只有与内容长度完全一致才算写入成功。
+            // 旧写法用 fwrite + fopen，写入 0 字节时返回整数 0，用 === false 判断会漏判成"保存成功"。
+            $res = @file_put_contents($target, $fc_new, LOCK_EX);
+            if ($res === false || $res !== strlen($fc_new)) {
                 return $this->ajaxErrorWithFreshToken(lang('save_err'));
             }
             return $this->success(lang('save_ok'));

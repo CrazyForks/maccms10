@@ -163,7 +163,11 @@ class Base extends All
             if(!empty($fc)){
 	            $jsb = mac_get_body($fc, '//缓存开始', '//缓存结束');
 	            $fc = str_replace($jsb, "\r\n" . $content . "\r\n", $fc);
-	            @fwrite(fopen('./static/js/playerconfig.js', 'wb'), $fc);
+	            // 用 file_put_contents（返回写入字节数，且不会泄漏文件句柄）
+	            $writeResult = @file_put_contents('./static/js/playerconfig.js', $fc, LOCK_EX);
+	            if ($writeResult === false || $writeResult !== strlen($fc)) {
+	                return false;
+	            }
             }
         }
 
